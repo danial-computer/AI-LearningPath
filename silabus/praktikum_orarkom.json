@@ -1,0 +1,66 @@
+[
+  {
+    "id": "OR_01_REPRESENTASI",
+    "name": "Data Representation (Biner, Oktal, Heksadesimal)",
+    "description": "Memahami sistem bilangan biner, oktal, heksadesimal, dan konversi antar-sistem bilangan serta representasi bilangan bulat bertanda (two's complement).",
+    "difficulty": 0.3,
+    "est_minutes": 90,
+    "prerequisites": []
+  },
+  {
+    "id": "OR_02_GERBANG_LOGIKA",
+    "name": "Logic Gates & Boolean Algebra",
+    "description": "Memahami fungsi gerbang logika dasar (AND, OR, NOT, NAND, NOR, XOR, XNOR) dan penyederhanaan fungsi boolean menggunakan Aljabar Boolean dan K-Map.",
+    "difficulty": 0.4,
+    "est_minutes": 120,
+    "prerequisites": ["OR_01_REPRESENTASI"]
+  },
+  {
+    "id": "OR_03_KOMBINA_SEKUEN",
+    "name": "Combinational & Sequential Circuits",
+    "description": "Mempelajari rangkaian kombinasional (Adder, Subtractor, Multiplexer, Decoder) dan rangkaian sekuensial (Latch, Flip-Flop, Register, Counter).",
+    "difficulty": 0.5,
+    "est_minutes": 150,
+    "prerequisites": ["OR_02_GERBANG_LOGIKA"]
+  },
+  {
+    "id": "OR_04_ARSITEKTUR_CPU",
+    "name": "CPU Architecture & Instruction Cycle",
+    "description": "Memahami komponen internal CPU seperti ALU, Control Unit, Register File, serta siklus instruksi (Fetch, Decode, Execute).",
+    "difficulty": 0.6,
+    "est_minutes": 120,
+    "prerequisites": ["OR_03_KOMBINA_SEKUEN"]
+  },
+  {
+    "id": "OR_05_ASSEMBLY_BASIC",
+    "name": "Basic Assembly Language",
+    "description": "Pengenalan instruksi dasar bahasa Assembly (MOV, ADD, SUB, INC, DEC) dan penggunaan register umum CPU (e.g., EAX, EBX, ECX).",
+    "difficulty": 0.7,
+    "est_minutes": 180,
+    "prerequisites": ["OR_04_ARSITEKTUR_CPU"]
+  },
+  {
+    "id": "OR_06_ASSEMBLY_BRANCH",
+    "name": "Assembly Branching & Loops",
+    "description": "Memahami instruksi lompatan bersyarat dan tidak bersyarat (JMP, JE, JNE, JG, JL) dan implementasi perulangan dalam bahasa Assembly.",
+    "difficulty": 0.8,
+    "est_minutes": 180,
+    "prerequisites": ["OR_05_ASSEMBLY_BASIC"]
+  },
+  {
+    "id": "OR_07_MEMORI",
+    "name": "Memory Hierarchy & Cache",
+    "description": "Mempelajari hierarki memori komputer (Register, Cache L1/L2/L3, RAM, ROM, Secondary Storage) dan konsep Cache Mapping.",
+    "difficulty": 0.6,
+    "est_minutes": 120,
+    "prerequisites": ["OR_04_ARSITEKTUR_CPU"]
+  },
+  {
+    "id": "OR_08_IO_INTERFACE",
+    "name": "Input/Output & Interrupts",
+    "description": "Memahami bagaimana perangkat luar berkomunikasi dengan CPU melalui mekanisme Polling, Programmed I/O, Interrupts, dan DMA (Direct Memory Access).",
+    "difficulty": 0.5,
+    "est_minutes": 90,
+    "prerequisites": ["OR_04_ARSITEKTUR_CPU"]
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "id": "DB_01_INTRO",
+    "name": "Introduction to Database Systems",
+    "description": "Memahami konsep dasar basis data, DBMS, arsitektur 3-level ANSI-SPARC, dan pentingnya independensi data.",
+    "difficulty": 0.2,
+    "est_minutes": 60,
+    "prerequisites": []
+  },
+  {
+    "id": "DB_02_ERD",
+    "name": "Entity-Relationship Diagram (ERD)",
+    "description": "Mempelajari pemodelan data konseptual menggunakan ERD, termasuk entitas, atribut, relasi, kardinalitas, dan generalisasi/spesialisasi.",
+    "difficulty": 0.5,
+    "est_minutes": 150,
+    "prerequisites": ["DB_01_INTRO"]
+  },
+  {
+    "id": "DB_03_RELATIONAL_MODEL",
+    "name": "Relational Model & Mapping ERD",
+    "description": "Memetakan ERD konseptual ke dalam skema relasional, memahami konsep Primary Key, Foreign Key, dan integritas referensial.",
+    "difficulty": 0.4,
+    "est_minutes": 120,
+    "prerequisites": ["DB_02_ERD"]
+  },
+  {
+    "id": "DB_04_NORMALIZATION",
+    "name": "Database Normalization (1NF, 2NF, 3NF, BCNF)",
+    "description": "Menganalisis ketergantungan fungsional dan melakukan dekomposisi tabel untuk menghindari anomali data serta mencapai bentuk normal.",
+    "difficulty": 0.7,
+    "est_minutes": 180,
+    "prerequisites": ["DB_03_RELATIONAL_MODEL"]
+  },
+  {
+    "id": "DB_05_SQL_DDL",
+    "name": "SQL Data Definition Language (DDL)",
+    "description": "Menulis query SQL untuk mendefinisikan skema basis data menggunakan perintah CREATE, ALTER, DROP, serta menambahkan constraints.",
+    "difficulty": 0.4,
+    "est_minutes": 90,
+    "prerequisites": ["DB_03_RELATIONAL_MODEL"]
+  },
+  {
+    "id": "DB_06_SQL_DML_BASIC",
+    "name": "Basic SQL Data Manipulation Language (DML)",
+    "description": "Melakukan manipulasi data menggunakan query SELECT dasar, INSERT, UPDATE, dan DELETE pada satu tabel.",
+    "difficulty": 0.4,
+    "est_minutes": 90,
+    "prerequisites": ["DB_05_SQL_DDL"]
+  },
+  {
+    "id": "DB_07_SQL_JOINS",
+    "name": "SQL Joins & Subqueries",
+    "description": "Menggabungkan beberapa tabel menggunakan INNER JOIN, LEFT/RIGHT JOIN, FULL OUTER JOIN, dan memformulasikan subquery bersarang.",
+    "difficulty": 0.6,
+    "est_minutes": 150,
+    "prerequisites": ["DB_06_SQL_DML_BASIC"]
+  },
+  {
+    "id": "DB_08_AGGREGATION",
+    "name": "SQL Aggregation & Grouping",
+    "description": "Menggunakan fungsi agregasi (SUM, AVG, COUNT, MAX, MIN) dikombinasikan dengan GROUP BY dan HAVING untuk analisis data.",
+    "difficulty": 0.5,
+    "est_minutes": 120,
+    "prerequisites": ["DB_06_SQL_DML_BASIC"]
+  },
+  {
+    "id": "DB_09_TRANSACTIONS",
+    "name": "Transaction & Concurrency Control",
+    "description": "Memahami konsep transaksi ACID, masalah interferensi (dirty read, non-repeatable read), dan mekanisme Locking (2PL).",
+    "difficulty": 0.8,
+    "est_minutes": 180,
+    "prerequisites": ["DB_07_SQL_JOINS"]
+  },
+  {
+    "id": "DB_10_OPTIMIZATION",
+    "name": "Indexing & Query Optimization",
+    "description": "Mempelajari pembuatan Index (B-Tree, Hash) untuk mempercepat pencarian data dan membaca Execution Plan untuk optimasi query.",
+    "difficulty": 0.7,
+    "est_minutes": 120,
+    "prerequisites": ["DB_07_SQL_JOINS"]
+  }
+]

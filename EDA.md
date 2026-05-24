@@ -1,15 +1,6 @@
 # 🎤 Exploratory Data Analysis (EDA) Dataset OULAD
 **Untuk Presentasi Dosen — Mata Kuliah Reasoning & Planning dalam AI**
 
----
-
-> [!TIP]
-> **Cara Menggunakan Naskah Ini:** 
-> - Teks biasa adalah apa yang Anda ucapkan. 
-> - Teks di dalam tanda kurung siku `[ ... ]` adalah instruksi aksi (seperti memindah slide atau menunjuk grafik).
-> - Sesuaikan gaya bahasa agar senatural mungkin dengan cara bicara Anda.
-
----
 
 ## 💡 Slide 1: Pembukaan & Judul Proyek
 **[Tampilkan Slide Judul: AI Learning Path Chatbot & Analisis EDA OULAD]**
