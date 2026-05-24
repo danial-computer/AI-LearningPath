@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 # 🎓 Progress & Penjelasan Proyek AI Learning Path Chatbot
 **Untuk Presentasi ke Dosen — Mata Kuliah Reasoning & Planning dalam AI**
 
@@ -184,7 +183,7 @@ Berisi deskripsi setiap situs/aktivitas yang tersedia di Virtual Learning Enviro
 
 ---
 
-## 4. Alur Analisis EDA (8 Bagian) — Penjelasan untuk Presentasi
+## 4. Alur Analisis EDA (8 Bagian)
 
 ### Section 1: Setup & Pemuatan Data
 **Tujuan:** Memuat semua 7 dataset ke memori Google Colab.
@@ -300,4 +299,3 @@ graph TD
 | Heavy users sukses, light users gagal | FSRS Spaced Repetition scheduling |
 | Withdrawal terdeteksi di awal modul | Early Warning → Adaptive Intervention |
 =======
->>>>>>> Stashed changes
