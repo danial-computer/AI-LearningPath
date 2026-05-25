@@ -298,4 +298,3 @@ graph TD
 | DIR < 0.8 pada IMD Band rendah | Socioeconomic-Blind BKT + Challenge Injection |
 | Heavy users sukses, light users gagal | FSRS Spaced Repetition scheduling |
 | Withdrawal terdeteksi di awal modul | Early Warning → Adaptive Intervention |
-=======
