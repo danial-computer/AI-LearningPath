@@ -1,5 +1,5 @@
 # 🎓 Progress & Penjelasan Proyek AI Learning Path Chatbot
-**Untuk Presentasi ke Dosen — Mata Kuliah Reasoning & Planning dalam AI**
+**Reasoning & Planning dalam AI**
 
 ---
 
