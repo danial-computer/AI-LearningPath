@@ -1,4 +1,4 @@
-# 🎓 Progress & Penjelasan Proyek AI Learning Path Chatbot
+# 🎓 Exploratory Data Analysis Proyek AI Learning Path Chatbot
 **Reasoning & Planning dalam AI**
 
 ---
