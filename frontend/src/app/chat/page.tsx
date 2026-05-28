@@ -177,13 +177,19 @@ export default function ChatPage() {
         formData.append("file", currentFile);
         const res = await fetch("http://localhost:8000/api/chat", {
           method: "POST",
+          headers: {
+            "X-Session-ID": activeId,
+          },
           body: formData,
         });
         data = await res.json();
       } else {
         const res = await fetch("http://localhost:8000/api/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-Session-ID": activeId,
+          },
           body: JSON.stringify({ message: userMsg.content }),
         });
         data = await res.json();
