@@ -13,7 +13,7 @@ import {
   Calendar,
 } from "lucide-react";
 
-function buildSparkline(data, w = 120, h = 40) {
+function buildSparkline(data: number[], w = 120, h = 40) {
   const max = Math.max(...data);
   const min = Math.min(...data);
   const range = max - min || 1;
