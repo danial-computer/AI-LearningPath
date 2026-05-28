@@ -38,7 +38,53 @@ export default function SidebarClient() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string>("");
+  const [profile, setProfile] = useState<{ course: string; style: string }>({
+    course: "",
+    style: ""
+  });
   const popupRef = useRef<HTMLDivElement>(null);
+
+  // Fetch session configuration for profile display
+  useEffect(() => {
+    if (!activeId) return;
+
+    const fetchSessionInfo = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/api/progress", {
+          headers: {
+            "X-Session-ID": activeId
+          }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.configured) {
+            setProfile({
+              course: json.course || "",
+              style: json.learning_style || ""
+            });
+          } else {
+            setProfile({ course: "", style: "" });
+          }
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    fetchSessionInfo();
+
+    // Listen to custom chat events to reload profile info when configuration happens
+    const handleChatUpdate = () => {
+      fetchSessionInfo();
+    };
+
+    window.addEventListener("chat-history-updated", handleChatUpdate);
+    window.addEventListener("switch-conversation", handleChatUpdate);
+    return () => {
+      window.removeEventListener("chat-history-updated", handleChatUpdate);
+      window.removeEventListener("switch-conversation", handleChatUpdate);
+    };
+  }, [activeId]);
 
   // Load conversations from localStorage
   const loadConversations = () => {
@@ -259,10 +305,14 @@ export default function SidebarClient() {
       {/* User profile */}
       <div className="p-4 border-t border-border">
         <div className="flex items-center gap-3 px-4 py-3">
-          <UserCircle className="w-8 h-8 text-gray-400" />
-          <div>
-            <p className="text-sm font-medium">Mahasiswa ID</p>
-            <p className="text-xs text-gray-400">Tingkat: Distinction</p>
+          <UserCircle className="w-8 h-8 text-gray-400 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate text-foreground">
+              {profile.course ? `${profile.course}` : "Guest Learner"}
+            </p>
+            <p className="text-xs text-gray-400 truncate">
+              {profile.style ? `${profile.style} Learner` : "Sesi Belum Aktif"}
+            </p>
           </div>
         </div>
       </div>
