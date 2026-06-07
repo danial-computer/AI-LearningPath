@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import uuid
 import json
@@ -28,9 +29,11 @@ def load_env():
 
 load_env()
 
-# ─── Buat folder uploads jika belum ada ───
+# ─── Buat folder uploads & sessions jika belum ada ───
 UPLOAD_DIR = "uploads"
+SESSIONS_DIR = "sessions"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(SESSIONS_DIR, exist_ok=True)
 
 app = FastAPI(
     title="AI Learning Path API",
@@ -67,14 +70,92 @@ class UserSession:
 # ─── Registry Sesi: session_id -> {"session_state": UserSession, "chat_history": list} ───
 session_registry = {}
 
+# ─── Persistent Session Storage ───
+def _session_path(session_id: str) -> str:
+    """Return the JSON file path for a given session ID."""
+    safe_id = session_id.replace("/", "_").replace("\\", "_")
+    return os.path.join(SESSIONS_DIR, f"{safe_id}.json")
+
+def save_session_to_disk(session_id: str):
+    """Persist session state + chat history to a JSON file."""
+    if session_id not in session_registry:
+        return
+    entry = session_registry[session_id]
+    session: UserSession = entry["session_state"]
+    data = {
+        "session_state": {
+            "course": session.course,
+            "learning_style": session.learning_style,
+            "current_node": session.current_node,
+            "mastery": session.mastery,
+            "fsrs_cards": session.fsrs_cards,
+            "remedial_attempts": session.remedial_attempts,
+            "override_active": session.override_active,
+            "override_node": session.override_node,
+            "syllabus": session.syllabus,
+            # graph is excluded — rebuilt from syllabus on load
+        },
+        "chat_history": entry["chat_history"]
+    }
+    try:
+        with open(_session_path(session_id), "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[Session] Failed to save session {session_id}: {e}")
+
+def load_session_from_disk(session_id: str) -> bool:
+    """Load session from JSON file into session_registry. Returns True if found."""
+    path = _session_path(session_id)
+    if not os.path.exists(path):
+        return False
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        s = UserSession()
+        state = data.get("session_state", {})
+        s.course = state.get("course")
+        s.learning_style = state.get("learning_style")
+        s.current_node = state.get("current_node")
+        s.mastery = state.get("mastery", {})
+        s.fsrs_cards = state.get("fsrs_cards", {})
+        s.remedial_attempts = state.get("remedial_attempts", 0)
+        s.override_active = state.get("override_active", False)
+        s.override_node = state.get("override_node")
+        s.syllabus = state.get("syllabus", [])
+        # Rebuild NetworkX graph from syllabus
+        if s.syllabus:
+            G, _ = load_syllabus_graph.__wrapped__(s.syllabus) if hasattr(load_syllabus_graph, '__wrapped__') else (None, [])
+            # Rebuild graph manually
+            import networkx as nx
+            G = nx.DiGraph()
+            for topic in s.syllabus:
+                G.add_node(topic["id"], **topic)
+            for topic in s.syllabus:
+                for prereq in topic.get("prerequisites", []):
+                    if G.has_node(prereq):
+                        G.add_edge(prereq, topic["id"])
+            s.graph = G
+        session_registry[session_id] = {
+            "session_state": s,
+            "chat_history": data.get("chat_history", [])
+        }
+        print(f"[Session] Loaded session {session_id[:8]}... from disk")
+        return True
+    except Exception as e:
+        print(f"[Session] Failed to load session {session_id}: {e}")
+        return False
+
 def get_session(session_id: str):
     if not session_id:
         session_id = "default_session"
     if session_id not in session_registry:
-        session_registry[session_id] = {
-            "session_state": UserSession(),
-            "chat_history": []
-        }
+        # Try loading from disk first
+        if not load_session_from_disk(session_id):
+            # Brand new session
+            session_registry[session_id] = {
+                "session_state": UserSession(),
+                "chat_history": []
+            }
     return session_registry[session_id]["session_state"], session_registry[session_id]["chat_history"]
 
 # ─── Database Flashcards Statik untuk Active Recall ───
@@ -121,8 +202,8 @@ FLASHCARDS_DB = {
 
 def get_flashcards(topic_id: str):
     return FLASHCARDS_DB.get(topic_id, [
-        {"q": f"Jelaskan prinsip utama konsep '{topic_id}'?", "a": "Prinsip utama materi ini dapat dipelajari secara interaktif bersama Socratic AI Tutor di ruang chat."},
-        {"q": f"Bagaimana penerapan konsep '{topic_id}'?", "a": "Anda dapat mencoba latihan pemrograman, kuis, atau menanyakan contoh implementasi di ruang obrolan."}
+        {"q": f"Explain the main principle of '{topic_id}'?", "a": "The core principles of this topic can be explored interactively with the Socratic AI Tutor in the chat."},
+        {"q": f"How is the concept of '{topic_id}' applied in practice?", "a": "Try practice exercises, quizzes, or ask for implementation examples in the chat room."}
     ])
 
 # ─── Helper: Memuat Silabus & NetworkX DAG ───
@@ -237,88 +318,93 @@ def update_sm2(card_state: dict, rating: int) -> dict:
 
     return {"interval": interval, "ease_factor": ease_factor, "repetitions": repetitions}
 
-# ─── Helper: Parsing Pemilihan Profil & Gaya Belajar ───
+# ─── Helper: Parsing Course & Learning Style Selection ───
 def parse_initial_selection(msg_text: str):
     msg_lower = msg_text.lower()
     course = None
     style = None
 
-    if any(k in msg_lower for k in ["database", "basis data", "db", "sql", "1"]):
+    # Use word-boundary matching to avoid false positives
+    # e.g. "a" should NOT match inside "maybe" or "database"
+    def has_word(text, word):
+        return bool(re.search(r'\b' + re.escape(word) + r'\b', text))
+
+    if any(has_word(msg_lower, k) for k in ["database", "basis data", "db", "sql", "1"]):
         course = "Database"
-    elif any(k in msg_lower for k in ["orarkom", "organisasi", "cpu", "gerbang", "assembly", "2"]):
+    elif any(has_word(msg_lower, k) for k in ["orarkom", "organisasi", "cpu", "gerbang", "assembly", "2"]):
         course = "Orarkom"
-    elif any(k in msg_lower for k in ["struktur data", "strukdat", "binary tree", "linked list", "stack", "queue", "graph", "3"]):
+    elif any(has_word(msg_lower, k) for k in ["struktur data", "strukdat", "data structure", "binary tree", "linked list", "stack", "queue", "graph", "3"]):
         course = "Struktur Data"
 
-    if any(k in msg_lower for k in ["visual", "interaktif", "diagram", "gambar", "a"]):
+    if any(has_word(msg_lower, k) for k in ["visual", "interactive", "interaktif", "diagram", "a"]):
         style = "Visual"
-    elif any(k in msg_lower for k in ["auditorial", "socratic", "tanya", "dialog", "b"]):
+    elif any(has_word(msg_lower, k) for k in ["auditory", "auditorial", "socratic", "dialogue", "dialog", "tanya", "b"]):
         style = "Auditorial"
-    elif any(k in msg_lower for k in ["praktikal", "koding", "praktek", "code", "coding", "latihan", "c"]):
+    elif any(has_word(msg_lower, k) for k in ["practical", "praktikal", "coding", "koding", "code", "praktek", "latihan", "c"]):
         style = "Praktikal"
 
     return course, style
 
 # ─── Helper: Membuat System Instruction Gemini ───
 def get_system_instruction(course: str, learning_style: str, current_node: dict, mastery: float, remedial_attempts: int):
-    node_name = current_node.get("name", "Topik Tidak Diketahui")
-    node_desc = current_node.get("description", "Tidak ada deskripsi")
+    node_name = current_node.get("name", "Unknown Topic")
+    node_desc = current_node.get("description", "No description available")
 
     instruction = (
-        "Anda adalah AI Socratic Tutor yang cerdas, empatik, dan interaktif untuk platform pembelajaran adaptif.\n"
-        f"Mata Kuliah: {course}\n"
-        f"Topik saat ini: {node_name}\n"
-        f"Deskripsi Topik: {node_desc}\n"
-        f"Probabilitas Penguasaan Kognitif Siswa pada topik ini: {mastery:.0%}\n\n"
+        "You are an intelligent, empathetic, and interactive Socratic AI Tutor for an adaptive learning platform.\n"
+        f"Course: {course}\n"
+        f"Current Topic: {node_name}\n"
+        f"Topic Description: {node_desc}\n"
+        f"Student's Cognitive Mastery Probability on this topic: {mastery:.0%}\n\n"
 
-        "--- ATURAN ETIKA & TUTORING (SOCRATIC GUARDRAIL) ---\n"
-        "1. JANGAN PERNAH memberikan jawaban coding langsung atau solusi mentah yang bisa di copy-paste oleh siswa.\n"
-        "2. Jika siswa meminta jawaban atau kode lengkap, tolak dengan sopan dan bimbing mereka langkah-demi-langkah menggunakan pertanyaan Socratic.\n"
-        "3. Tanyakan pemahaman awal mereka, berikan potongan pseudocode atau petunjuk kecil (hints), dan minta mereka menulis kodenya sendiri.\n"
-        "4. Selalu evaluasi jawaban siswa secara kritis namun konstruktif.\n\n"
+        "--- ETHICS & TUTORING RULES (SOCRATIC GUARDRAIL) ---\n"
+        "1. NEVER give direct coding answers or raw solutions that students can copy-paste.\n"
+        "2. If a student asks for a full answer or code, politely decline and guide them step-by-step using Socratic questions.\n"
+        "3. Ask about their initial understanding, provide pseudocode snippets or small hints, and ask them to write the code themselves.\n"
+        "4. Always evaluate student answers critically but constructively.\n\n"
     )
 
     if learning_style == "Visual":
         instruction += (
-            "--- GAYA BELAJAR: VISUAL & INTERAKTIF ---\n"
-            "- Gunakan representasi visual seperti diagram alur teks, tabel markdown, atau diagram ASCII untuk menjelaskan konsep.\n"
-            "- Buat visualisasi hierarki memori, rangkaian, pointer, atau database relations secara visual menggunakan karakter teks (misalnya, [Node A] -> [Node B]).\n"
-            "- Sajikan ringkasan terstruktur dengan format bullet points yang rapi.\n\n"
+            "--- LEARNING STYLE: VISUAL & INTERACTIVE ---\n"
+            "- Use visual representations such as text flowcharts, markdown tables, or ASCII diagrams to explain concepts.\n"
+            "- Create visual representations of memory hierarchies, circuits, pointers, or database relations using text characters (e.g., [Node A] -> [Node B]).\n"
+            "- Present structured summaries using clean bullet point formatting.\n\n"
         )
     elif learning_style == "Auditorial":
         instruction += (
-            "--- GAYA BELAJAR: AUDITORIAL & SOCRATIC DIALOGUE ---\n"
-            "- Gunakan nada percakapan yang sangat interaktif dan dialogis, seolah-olah Anda adalah tutor pribadi yang sedang berbicara langsung.\n"
-            "- Gunakan analogi dunia nyata untuk menjelaskan konsep abstrak.\n"
-            "- Akhiri penjelasan Anda dengan pertanyaan pemantik diskusi yang membimbing siswa menemukan jawabannya sendiri.\n\n"
+            "--- LEARNING STYLE: AUDITORY & SOCRATIC DIALOGUE ---\n"
+            "- Use a highly interactive and conversational tone, as if you are a personal tutor speaking directly.\n"
+            "- Use real-world analogies to explain abstract concepts.\n"
+            "- End your explanations with thought-provoking discussion questions that guide students to find their own answers.\n\n"
         )
     elif learning_style == "Praktikal":
         instruction += (
-            "--- GAYA BELAJAR: PRAKTIKAL & FOKUS KODING ---\n"
-            "- Berikan tantangan praktis kecil (mini-coding challenges) yang relevan dengan topik.\n"
-            "- Sediakan cuplikan sintaks kosong/setengah selesai (fill-in-the-blanks code templates) atau minta mereka mendebug baris kode yang rusak.\n"
-            "- Fokuskan penjelasan pada penerapan praktis di dunia nyata.\n\n"
+            "--- LEARNING STYLE: PRACTICAL & CODING-FOCUSED ---\n"
+            "- Provide small practical challenges (mini-coding challenges) relevant to the topic.\n"
+            "- Supply empty/half-finished syntax snippets (fill-in-the-blanks code templates) or ask them to debug broken code.\n"
+            "- Focus explanations on real-world practical applications.\n\n"
         )
 
     if remedial_attempts >= 2:
         instruction += (
-            "--- PENYISIPAN TANTANGAN (CHALLENGE INJECTION) ---\n"
-            "Siswa terdeteksi berada di Remedial Loop (gagal memahami kuis/latihan berkali-kali).\n"
-            "Untuk mencegah frustrasi:\n"
-            "- Sederhanakan bahasa Anda dan tawarkan sub-topik alternatif yang lebih mudah.\n"
-            "- Berikan analogi yang lebih sederhana.\n"
-            "- Berikan saran untuk berkonsultasi dengan Asisten Praktikum.\n"
-            "- Jika mereka mengalami kebuntuan total pada koding, berikan mereka tantangan visual/alternatif yang menyegarkan.\n\n"
+            "--- CHALLENGE INJECTION ---\n"
+            "The student has been detected in a Remedial Loop (failed to understand quizzes/exercises multiple times).\n"
+            "To prevent frustration:\n"
+            "- Simplify your language and offer easier alternative sub-topics.\n"
+            "- Provide simpler analogies.\n"
+            "- Suggest consulting a Lab Assistant.\n"
+            "- If they are completely stuck on coding, give them a refreshing visual/alternative challenge.\n\n"
         )
 
     instruction += (
-        "--- EVALUASI KOGNITIF & BKT UPDATE ---\n"
-        "Evaluasi apakah interaksi/jawaban siswa menunjukkan bahwa mereka berhasil menjawab kuis/pertanyaan latihan dengan BENAR atau SALAH.\n"
-        "Di bagian akhir respon Anda, Anda HARUS menyisipkan salah satu tag rahasia berikut (pisahkan dengan baris baru):\n"
-        "- Jika siswa berhasil menjawab pertanyaan latihan/kuis dengan BENAR dan menunjukkan pemahaman: ketik `[BKT_UPDATE: CORRECT]`\n"
-        "- Jika siswa mencoba menjawab pertanyaan latihan/kuis tetapi SALAH atau masih salah paham: ketik `[BKT_UPDATE: INCORRECT]`\n"
-        "- Jika siswa hanya bertanya secara umum, berdiskusi biasa, atau belum menjawab kuis: JANGAN sisipkan tag apa pun.\n"
-        "Tag ini sangat penting untuk memperbarui status kognitif (Knowledge Tracing) di database backend."
+        "--- COGNITIVE EVALUATION & BKT UPDATE ---\n"
+        "Evaluate whether the student's interaction/answer shows they answered the quiz/practice question CORRECTLY or INCORRECTLY.\n"
+        "At the end of your response, you MUST insert one of the following secret tags (separated by a newline):\n"
+        "- If the student answered a practice question/quiz CORRECTLY and shows understanding: type `[BKT_UPDATE: CORRECT]`\n"
+        "- If the student attempted a practice question/quiz but was INCORRECT or still misunderstands: type `[BKT_UPDATE: INCORRECT]`\n"
+        "- If the student is just asking generally, having a casual discussion, or hasn't answered a quiz yet: DO NOT insert any tag.\n"
+        "This tag is critical for updating the cognitive status (Knowledge Tracing) in the backend database."
     )
     return instruction
 
@@ -326,36 +412,35 @@ def get_system_instruction(course: str, learning_style: str, current_node: dict,
 def simulate_ai_response(prompt: str) -> str:
     prompt_lower = prompt.lower()
     
-    if "ingin berhenti" in prompt_lower or "menyerah" in prompt_lower or "dropout" in prompt_lower:
+    if any(k in prompt_lower for k in ["give up", "quit", "dropout", "menyerah", "berhenti"]):
         return (
-            "⚠️ [Intervensi Sistem]\n"
-            "Saya mengerti ini mungkin terasa berat. Berdasarkan data, banyak mahasiswa yang "
-            "mengalami kesulitan di tahap ini, namun berhasil lulus setelah mengulang kuis "
-            "praktikum. Apakah Anda ingin mencoba latihan yang lebih mudah dulu untuk "
-            "mengembalikan kepercayaan diri?"
+            "⚠️ [System Intervention]\n"
+            "I understand this might feel tough. Based on the data, many students struggle at this stage "
+            "but succeed after reviewing the practicum quizzes. "
+            "Would you like to try an easier exercise first to rebuild your confidence?"
         )
     
-    if any(k in prompt_lower for k in ["jawaban", "kodingan", "buatkan", "jawabannya", "minta kode"]):
+    if any(k in prompt_lower for k in ["answer", "code", "solution", "jawaban", "kodingan", "buatkan"]):
         return (
             "🔍 [Socratic Guardrail]\n"
-            "Sebagai AI Tutor, saya tidak bisa memberikan jawaban kode langsung demi integritas akademik.\n"
-            "Namun, saya bisa memberi Anda petunjuk. Cobalah pikirkan:\n"
-            "1. Apa parameter input yang dibutuhkan?\n"
-            "2. Bagaimana kondisi batas (edge cases) untuk algoritma ini?\n"
-            "Coba tuliskan potongan kodenya dahulu dan bagikan ke saya untuk dievaluasi!\n\n"
+            "As an AI Tutor, I can't give direct code answers to protect academic integrity.\n"
+            "But I can give you hints. Try thinking about:\n"
+            "1. What input parameters are needed?\n"
+            "2. What are the edge cases for this algorithm?\n"
+            "Write a code snippet first and share it with me for evaluation!\n\n"
             "[BKT_UPDATE: INCORRECT]"
         )
         
-    if any(k in prompt_lower for k in ["benar", "betul", "selesai", "berhasil", "sudah", "berikutnya"]):
+    if any(k in prompt_lower for k in ["correct", "done", "finished", "benar", "selesai", "berhasil"]):
         return (
-            "🎉 Bagus sekali! Jawaban atau analisis Anda tepat sekali. Anda telah berhasil menguasai bagian konsep ini.\n\n"
-            "Mari kita berlanjut ke submateri berikutnya atau mencoba tantangan baru. Apakah Anda siap?\n\n"
+            "🎉 Great job! Your answer or analysis is spot on. You've successfully mastered this part of the concept.\n\n"
+            "Let's move on to the next sub-topic or try a new challenge. Are you ready?\n\n"
             "[BKT_UPDATE: CORRECT]"
         )
         
     return (
-        "Menarik sekali! Mari kita bahas konsep ini lebih dalam menggunakan gaya belajar yang Anda pilih.\n"
-        "Apakah ada bagian dari penjelasan sebelumnya yang ingin Anda diskusikan kembali?"
+        "Interesting! Let's explore this concept further using your chosen learning style.\n"
+        "Is there any part of the previous explanation you'd like to discuss further?"
     )
 
 # ─── Helper: Memanggil Real Gemini API ───
@@ -364,56 +449,143 @@ def generate_ai_response(system_instruction: str, prompt: str, history=None) -> 
     if not api_key:
         return simulate_ai_response(prompt)
 
-    try:
-        client = genai.Client(api_key=api_key)
-        config = types.GenerateContentConfig(
-            system_instruction=system_instruction,
-            temperature=0.7,
+    # Model cascade: (model_name, api_version)
+    # v1beta: supports newer 2.x models
+    # v1:     supports older 1.5.x models (they 404 on v1beta)
+    MODELS = [
+        ("gemini-2.5-flash",    "v1beta"),   # 20 RPD free tier
+        ("gemini-1.5-flash",    "v1"),        # widely available on v1
+        ("gemini-1.5-pro",      "v1"),        # fallback with higher context
+    ]
+
+    contents = []
+    if history:
+        for msg in history[-10:]:
+            role = "user" if msg["role"] == "user" else "model"
+            contents.append(types.Content(
+                role=role,
+                parts=[types.Part.from_text(text=msg["content"])]
+            ))
+    contents.append(types.Content(
+        role="user",
+        parts=[types.Part.from_text(text=prompt)]
+    ))
+
+    last_error = None
+    for model_name, api_version in MODELS:
+        try:
+            client = genai.Client(
+                api_key=api_key,
+                http_options={"api_version": api_version}
+            )
+
+            if api_version == "v1beta":
+                # v1beta supports systemInstruction natively
+                config = types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    temperature=0.7,
+                )
+                model_contents = contents
+            else:
+                # v1 does NOT support systemInstruction — prepend it to contents instead
+                config = types.GenerateContentConfig(temperature=0.7)
+                system_turn = types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(
+                        text=f"[System Instructions — follow these throughout the conversation]\n{system_instruction}"
+                    )]
+                )
+                ack_turn = types.Content(
+                    role="model",
+                    parts=[types.Part.from_text(text="Understood. I will follow these instructions throughout our conversation.")]
+                )
+                model_contents = [system_turn, ack_turn] + contents
+
+            response = client.models.generate_content(
+                model=model_name,
+                contents=model_contents,
+                config=config
+            )
+            if model_name != "gemini-2.5-flash":
+                print(f"[Cascade] Using fallback model: {model_name}")
+            return response.text
+        except Exception as e:
+            err_str = str(e)
+            print(f"Gemini API Error [{model_name}]: {e}")
+            # Continue to next model on quota errors OR model not found (limit:0 = no access)
+            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "404" in err_str or "NOT_FOUND" in err_str:
+                last_error = e
+                continue
+            # Hard errors (auth, network): stop immediately
+            last_error = e
+            break
+
+    # All models failed — build a friendly error
+    err_str = str(last_error) if last_error else ""
+    if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+        # Extract retry delay from error message if available
+        import re as _re
+        delay_match = _re.search(r'retry[^\d]*(\d+(?:\.\d+)?)s', err_str, _re.IGNORECASE)
+        delay_hint = f" Please wait **{int(float(delay_match.group(1)))} seconds** and try again." if delay_match else " Please wait a moment and try again."
+        return (
+            "⚠️ **Daily quota exceeded for all available models.**\n\n"
+            f"The free tier limit has been reached for today.{delay_hint}\n\n"
+            "> 💡 **Tip:** The quota resets daily. You can also upgrade to a paid Google AI plan for higher limits."
         )
-        
-        contents = []
-        if history:
-            for msg in history[-10:]:
-                role = "user" if msg["role"] == "user" else "model"
-                contents.append(types.Content(
-                    role=role,
-                    parts=[types.Part.from_text(text=msg["content"])]
-                ))
-                
-        contents.append(types.Content(
-            role="user",
-            parts=[types.Part.from_text(text=prompt)]
-        ))
-        
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=contents,
-            config=config
+    elif "503" in err_str or "UNAVAILABLE" in err_str:
+        return (
+            "⚠️ **The AI server is currently under high demand.**\n\n"
+            "Google's Gemini API is temporarily overloaded. "
+            "This usually resolves within a few seconds — please try sending your message again."
         )
-        return response.text
-    except Exception as e:
-        print(f"Gemini API Error: {e}")
-        return f"⚠️ [Sistem: Error Gemini API]\n\nDetail: {str(e)}\n\n(Fallback ke mode simulasi):\n" + simulate_ai_response(prompt)
+    elif "401" in err_str or "API_KEY" in err_str:
+        return (
+            "⚠️ **API key error.**\n\n"
+            "The Gemini API key is invalid or missing. Please check your `.env` configuration."
+        )
+    else:
+        return (
+            "⚠️ **An error occurred while contacting the AI.**\n\n"
+            "Please try again in a moment."
+        )
+
 
 # ─── Endpoint: Root & Health ───
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "Backend API AI Learning Path berjalan dengan baik!"}
+    return {"status": "ok", "message": "AI Learning Path Backend API is running!"}
 
 @app.get("/api/health")
 def health_check():
     return {"status": "healthy"}
 
-# ─── Endpoint: Reset Sesi Belajar ───
+# ─── Endpoint: Reset Session ───
 @app.post("/api/reset")
 def reset_session(request: Request):
     session_id = request.headers.get("X-Session-ID", "default_session")
+    session_registry[session_id] = {
+        "session_state": UserSession(),
+        "chat_history": []
+    }
+    save_session_to_disk(session_id)
+    return {"status": "ok", "message": f"Session '{session_id}' has been reset."}
+
+# ─── Endpoint: Delete Session ───
+@app.delete("/api/session")
+def delete_session(request: Request):
+    session_id = request.headers.get("X-Session-ID", "default_session")
     if session_id in session_registry:
-        session_registry[session_id] = {
-            "session_state": UserSession(),
-            "chat_history": []
-        }
-    return {"status": "ok", "message": f"Sesi belajar '{session_id}' berhasil di-reset!"}
+        del session_registry[session_id]
+    # Always try to remove the file, even if not in memory
+    path = _session_path(session_id)
+    if os.path.exists(path):
+        try:
+            os.remove(path)
+        except Exception as e:
+            print(f"[Session] Failed to delete file for {session_id}: {e}")
+        return {"status": "ok", "message": f"Session '{session_id}' has been deleted."}
+    return {"status": "not_found", "message": f"Session '{session_id}' not found."}
+
 
 # ─── Endpoint: Ambil Kemajuan Siswa (Real-time untuk Jalur Silabus) ───
 @app.get("/api/progress")
@@ -557,67 +729,65 @@ async def chat_with_ai(
                 session.override_active = False
                 session.current_node = get_next_topic(session)
 
-                course_title = {
-                    "Database": "Sistem Database",
-                    "Orarkom": "Organisasi & Arsitektur Komputer (Orarkom)",
-                    "Struktur Data": "Struktur Data"
-                }[session.course]
+                course_title = session.course
 
                 style_title = {
-                    "Visual": "Visual & Interaktif",
-                    "Auditorial": "Auditorial & Socratic Dialogue",
-                    "Praktikal": "Praktikal & Fokus Koding"
+                    "Visual": "Visual & Interactive",
+                    "Auditorial": "Auditory & Socratic Dialogue",
+                    "Praktikal": "Practical & Coding-Focused"
                 }[session.learning_style]
 
                 reply = (
-                    f"🎉 **Profil Belajar Berhasil Dibuat!**\n\n"
-                    f"• **Mata Kuliah:** {course_title}\n"
-                    f"• **Gaya Belajar:** {style_title}\n\n"
-                    f"Mari kita mulai! Topik pertama kita adalah **{session.current_node['name']}**.\n"
-                    f"Deskripsi: {session.current_node['description']}\n\n"
-                    "Apakah Anda sudah siap untuk mulai mempelajari konsep ini? Katakan 'Siap' untuk memulai!"
+                    f"🎉 **Learning Profile Created!**\n\n"
+                    f"• **Course:** {course_title}\n"
+                    f"• **Learning Style:** {style_title}\n\n"
+                    f"Let's get started! Your first topic is **{session.current_node['name']}**.\n"
+                    f"Description: {session.current_node['description']}\n\n"
+                    "Are you ready to start learning this concept? Say 'Ready' to begin!"
                 )
                 chat_history.append({"role": "user", "content": user_message})
                 chat_history.append({"role": "bot", "content": reply})
+                save_session_to_disk(session_id)
                 return _build_response(reply, file_url, file_name, file_size, file_type)
             else:
                 session.course = None
                 session.learning_style = None
-                reply = "⚠️ Terjadi kesalahan memuat silabus. Silakan ketik ulang pilihan Anda."
+                reply = "⚠️ Error loading syllabus. Please retype your selection."
                 return _build_response(reply, file_url, file_name, file_size, file_type)
 
         if session.course is None and session.learning_style is None:
             reply = (
-                "Halo! Selamat datang di **AI Learning Path**.\n"
-                "Sebelum kita mulai, silakan pilih **Mata Kuliah** yang ingin Anda pelajari dan **Gaya Belajar** yang Anda inginkan:\n\n"
-                "**Pilihan Mata Kuliah:**\n"
-                "1. **Sistem Database**\n"
-                "2. **Organisasi dan Arsitektur Komputer (Orarkom)**\n"
-                "3. **Struktur Data**\n\n"
-                "**Pilihan Gaya Belajar:**\n"
-                "*   **A. Visual & Interaktif**: Menggunakan visualisasi konsep, diagram ASCII, dan diagram alur.\n"
-                "*   **B. Auditorial & Socratic Dialogue**: Menggunakan diskusi tanya-jawab terarah untuk membimbing pemahaman Anda.\n"
-                "*   **C. Praktikal & Fokus Koding**: Menggunakan contoh potongan kode, latihan praktis, dan pseudocode.\n\n"
-                "*Format balasan Anda bisa seperti ini: **'1 dan A'** atau **'Struktur Data dengan gaya Socratic'**.*"
+                "Hello! Welcome to **AI Learning Path**.\n"
+                "Before we begin, please select the **Course** you want to study and your preferred **Learning Style**:\n\n"
+                "**Course Options:**\n"
+                "1. **Database**\n"
+                "2. **Computer Organization & Architecture (Orarkom)**\n"
+                "3. **Data Structures**\n\n"
+                "**Learning Style Options:**\n"
+                "*   **A. Visual & Interactive**: Uses concept visualizations, ASCII diagrams, and flowcharts.\n"
+                "*   **B. Auditory & Socratic Dialogue**: Uses guided Q&A discussion to develop your understanding.\n"
+                "*   **C. Practical & Coding-Focused**: Uses code snippets, hands-on exercises, and pseudocode.\n\n"
+                "*You can reply like this: **'1 and A'** or **'Data Structures with Socratic style'**.*"
             )
         elif session.course is None:
             reply = (
-                f"Gaya belajar Anda telah diatur ke **{session.learning_style}**.\n"
-                "Sekarang, silakan pilih mata kuliah yang ingin Anda pelajari:\n\n"
-                "1. **Sistem Database**\n"
-                "2. **Organisasi dan Arsitektur Komputer (Orarkom)**\n"
-                "3. **Struktur Data**\n\n"
-                "*Balas dengan **1**, **2**, atau **3**.*"
+                f"Your learning style has been set to **{session.learning_style}**.\n"
+                "Now, please choose the course you want to study:\n\n"
+                "1. **Database**\n"
+                "2. **Computer Organization & Architecture (Orarkom)**\n"
+                "3. **Data Structures**\n\n"
+                "*Reply with **1**, **2**, or **3**.*"
             )
         else:
             reply = (
-                f"Mata kuliah Anda telah diatur ke **{session.course}**.\n"
-                "Sekarang, silakan pilih gaya belajar yang Anda inginkan:\n\n"
-                "*   **A. Visual & Interaktif**: Menggunakan visualisasi konsep, diagram ASCII, dan diagram alur.\n"
-                "*   **B. Auditorial & Socratic Dialogue**: Menggunakan diskusi tanya-jawab terarah untuk membimbing pemahaman Anda.\n"
-                "*   **C. Praktikal & Fokus Koding**: Menggunakan contoh potongan kode, latihan praktis, dan pseudocode.\n\n"
-                "*Balas dengan **A**, **B**, atau **C**.*"
+                f"Your course has been set to **{session.course}**.\n"
+                "Now, please choose your preferred learning style:\n\n"
+                "*   **A. Visual & Interactive**: Uses concept visualizations, ASCII diagrams, and flowcharts.\n"
+                "*   **B. Auditory & Socratic Dialogue**: Uses guided Q&A discussion to develop your understanding.\n"
+                "*   **C. Practical & Coding-Focused**: Uses code snippets, hands-on exercises, and pseudocode.\n\n"
+                "*Reply with **A**, **B**, or **C**.*"
             )
+        save_session_to_disk(session_id)
         return _build_response(reply, file_url, file_name, file_size, file_type)
 
     # 5. Percakapan Utama dengan Gemini API
@@ -676,8 +846,8 @@ async def chat_with_ai(
                     
                     rem_node = {
                         "id": rem_node_id,
-                        "name": f"Latihan Penguatan: {current_node['name']}",
-                        "description": f"Materi penguatan terfokus dan sederhana untuk memantapkan pemahaman Anda tentang '{current_node['name']}' sebelum melangkah maju.",
+                        "name": f"Reinforcement Practice: {current_node['name']}",
+                        "description": f"Focused and simplified reinforcement material to solidify your understanding of '{current_node['name']}' before moving forward.",
                         "difficulty": max(0.1, round(current_node.get("difficulty", 0.5) - 0.2, 2)),
                         "est_minutes": 25,
                         "prerequisites": original_prereqs,
@@ -740,14 +910,15 @@ async def chat_with_ai(
                     )
                 else:
                     ai_reply += (
-                        f"\n\n🏆 **Luar Biasa!** Anda telah berhasil menguasai semua materi kuliah **{session.course}**! "
-                        "Seluruh silabus telah diselesaikan dengan sangat baik. Anda dapat meninjau kembali materi kapan saja atau memilih mata kuliah baru dengan mengetik **/reset**."
+                        f"\n\n🏆 **Outstanding!** You have successfully mastered all topics in **{session.course}**! "
+                        "The entire syllabus has been completed. You can review any topic anytime or choose a new course by typing **/reset**."
                     )
 
-    # 7. Simpan Riwayat Chat
+    # 7. Save chat history & persist session to disk
     chat_history.append({"role": "user", "content": user_message})
     chat_history.append({"role": "bot", "content": ai_reply})
-    
+    save_session_to_disk(session_id)
+
     return _build_response(ai_reply, file_url, file_name, file_size, file_type)
 
 def _build_response(reply: str, file_url, file_name, file_size, file_type):

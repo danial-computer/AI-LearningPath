@@ -173,7 +173,7 @@ export default function SyllabusPathPage() {
               style={{ animationDelay: "0.4s" }}
             />
           </div>
-          <span className="text-sm text-gray-400 font-medium">Memuat Jalur Silabus...</span>
+          <span className="text-sm text-gray-400 font-medium">Loading Learning Path...</span>
         </div>
       </div>
     );
@@ -184,15 +184,15 @@ export default function SyllabusPathPage() {
       <div className="flex h-full items-center justify-center bg-background px-6">
         <div className="bg-card border border-red-500/10 p-8 rounded-2xl max-w-md w-full text-center space-y-4">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto animate-pulse" />
-          <h2 className="text-xl font-bold text-foreground">Koneksi Backend Terputus</h2>
+          <h2 className="text-xl font-bold text-foreground">Backend Connection Lost</h2>
           <p className="text-sm text-gray-400 leading-relaxed">
-            {error || "Tidak ada respon dari server API."}
+            {error || "No response from the API server."}
           </p>
           <button
             onClick={() => window.location.reload()}
             className="w-full bg-white/5 border border-border/80 hover:bg-white/10 text-foreground py-2.5 rounded-xl text-sm font-medium transition-all"
           >
-            Coba Hubungkan Kembali
+            Retry Connection
           </button>
         </div>
       </div>
@@ -215,17 +215,17 @@ export default function SyllabusPathPage() {
           </div>
           <div className="space-y-2">
             <h2 className="text-2xl font-bold tracking-tight text-foreground">
-              Jalur Silabus Belum Aktif
+              Learning Path Not Active
             </h2>
             <p className="text-sm text-gray-400 leading-relaxed">
-              Anda belum memilih materi pembelajaran Anda. Silakan masuk ke Chat AI terlebih dahulu dan pilih mata kuliah serta gaya belajar Anda untuk membuka kurikulum adaptif Anda.
+              You haven't chosen your learning material yet. Please go to Chat AI first and select a course and learning style to unlock your adaptive curriculum.
             </p>
           </div>
           <Link
             href="/chat"
             className="inline-flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-hover text-white py-3 rounded-xl font-semibold text-sm transition-all shadow-[0_4px_20px_rgba(10,139,248,0.25)] hover:shadow-[0_4px_25px_rgba(10,139,248,0.4)]"
           >
-            Mulai Konfigurasi Chat <ArrowRight className="w-4 h-4" />
+            Start Chat Configuration <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
@@ -243,11 +243,11 @@ export default function SyllabusPathPage() {
 
   const getDifficultyBadge = (difficulty: number) => {
     if (difficulty <= 0.4) {
-      return <span className="px-2 py-0.5 text-[10px] font-semibold text-green-400 bg-green-500/10 rounded">Mudah</span>;
+      return <span className="px-2 py-0.5 text-[10px] font-semibold text-green-400 bg-green-500/10 rounded">Easy</span>;
     } else if (difficulty <= 0.7) {
-      return <span className="px-2 py-0.5 text-[10px] font-semibold text-yellow-400 bg-yellow-500/10 rounded">Sedang</span>;
+      return <span className="px-2 py-0.5 text-[10px] font-semibold text-yellow-400 bg-yellow-500/10 rounded">Medium</span>;
     } else {
-      return <span className="px-2 py-0.5 text-[10px] font-semibold text-red-400 bg-red-500/10 rounded">Sulit</span>;
+      return <span className="px-2 py-0.5 text-[10px] font-semibold text-red-400 bg-red-500/10 rounded">Hard</span>;
     }
   };
 
@@ -258,13 +258,13 @@ export default function SyllabusPathPage() {
         <div className="space-y-1.5">
           <span className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5" />
-            Jalur Belajar Adaptif (Sesi Multi-User)
+            Adaptive Learning Path (Multi-User Session)
           </span>
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-            {data.course === "Database" ? "Sistem Database" : data.course === "Orarkom" ? "Organisasi & Arsitektur Komputer" : "Struktur Data"}
+            {data.course}
           </h1>
           <p className="text-sm text-gray-400">
-            Gaya Belajar: <strong className="text-primary">{data.learning_style}</strong> | ID Sesi: <code className="text-xs text-gray-500">{sessionId.slice(0, 8)}...</code>
+            Learning Style: <strong className="text-primary">{data.learning_style}</strong> | Session ID: <code className="text-xs text-gray-500">{sessionId.slice(0, 8)}...</code>
           </p>
         </div>
 
@@ -296,10 +296,37 @@ export default function SyllabusPathPage() {
             <span className="absolute text-xs font-bold text-foreground">{progressPercent}%</span>
           </div>
           <div>
-            <p className="text-xs text-gray-500 font-medium">Tingkat Penguasaan</p>
+            <p className="text-xs text-gray-500 font-medium">Mastery Level</p>
             <p className="text-sm font-semibold text-gray-300">
-              {masteredNodes} dari {totalNodes} Topik Selesai
+              {masteredNodes} of {totalNodes} Topics Completed
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── How It Works Info Banner ─── */}
+      <div className="bg-white/[0.02] border border-border/60 rounded-2xl px-5 py-4 flex flex-col sm:flex-row gap-4 text-xs text-gray-400">
+        <div className="flex items-start gap-2 flex-1">
+          <Brain className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold text-gray-200 block mb-0.5">Cognitive Mastery (BKT)</span>
+            Reach <strong className="text-green-400">≥ 80%</strong> mastery to unlock the next topic. Mastery updates automatically after each quiz or answer in Chat AI.
+          </div>
+        </div>
+        <div className="w-px bg-border/40 hidden sm:block" />
+        <div className="flex items-start gap-2 flex-1">
+          <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold text-gray-200 block mb-0.5">Remedial Trigger</span>
+            <strong className="text-red-400">2 incorrect answers</strong> in a row on the same topic inserts a Reinforcement Exercise before you can advance.
+          </div>
+        </div>
+        <div className="w-px bg-border/40 hidden sm:block" />
+        <div className="flex items-start gap-2 flex-1">
+          <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold text-gray-200 block mb-0.5">Spaced Repetition (SM-2)</span>
+            Completed topics can be reviewed via <strong className="text-gray-200">Flashcards</strong> — the AI schedules reviews to maintain long-term memory.
           </div>
         </div>
       </div>
@@ -329,24 +356,24 @@ export default function SyllabusPathPage() {
             borderCls = "border-green-500/20 bg-green-500/[0.02] hover:border-green-500/35";
             icon = <CheckCircle2 className="w-5 h-5 text-green-400" />;
             iconBg = "bg-green-500/10 border-green-500/20";
-            statusText = "TUNTAS";
+            statusText = "COMPLETED";
           } else if (isActive) {
             borderCls = topic.is_remedial
               ? "border-red-500 bg-red-500/[0.04] shadow-[0_0_20px_rgba(239,68,68,0.1)] animate-[pulse_3s_infinite]"
               : "border-primary bg-primary/[0.04] shadow-[0_0_20px_rgba(10,139,248,0.08)] animate-[pulse_3.5s_infinite]";
             icon = <Activity className={`w-5 h-5 ${topic.is_remedial ? "text-red-400" : "text-primary"}`} />;
             iconBg = topic.is_remedial ? "bg-red-500/10 border-red-500/20" : "bg-primary/10 border-primary/20";
-            statusText = topic.is_remedial ? "REMEDIAL & PENGUATAN" : "SEDANG DIPELAJARI";
+            statusText = topic.is_remedial ? "REMEDIAL & REINFORCEMENT" : "CURRENTLY STUDYING";
           } else if (isLocked) {
             borderCls = "border-white/[0.03] bg-white/[0.01] opacity-45 select-none";
             icon = <Lock className="w-4 h-4 text-gray-500" />;
             iconBg = "bg-white/[0.02] border-white/[0.05]";
-            statusText = "TERKUNCI";
+            statusText = "LOCKED";
           } else if (isAvailable) {
             borderCls = "border-yellow-500/20 bg-yellow-500/[0.02] hover:border-yellow-500/35";
             icon = <Play className="w-4 h-4 text-yellow-400" />;
             iconBg = "bg-yellow-500/10 border-yellow-500/20";
-            statusText = "SIAP DIPELAJARI";
+            statusText = "READY TO STUDY";
           }
 
           return (
@@ -368,7 +395,7 @@ export default function SyllabusPathPage() {
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-[10px] font-bold text-gray-500 tracking-wider">
-                        {topic.is_remedial ? "LATIHAN KHUSUS" : `MATERI ${index + 1}`}
+                        {topic.is_remedial ? "SPECIAL EXERCISE" : `TOPIC ${index + 1}`}
                       </span>
                       {statusText && (
                         <span
@@ -404,56 +431,101 @@ export default function SyllabusPathPage() {
                 {/* Prasyarat */}
                 {prereqs.length > 0 && (
                   <div className="flex flex-wrap items-center gap-1.5 mb-4 text-xs text-gray-500">
-                    <span>Prasyarat:</span>
+                    <span>Prerequisites:</span>
                     {prereqs.map((pid) => {
                       const reqTopic = syllabus.find((t) => t.id === pid);
-                      const reqMastered = (mastery[pid] ?? 0.0) >= 0.8;
+                      const reqMastery = mastery[pid] ?? 0.0;
+                      const reqMastered = reqMastery >= 0.8;
                       return (
                         <span
                           key={pid}
-                          className={`px-2 py-0.5 rounded border text-[10px] ${
+                          className={`px-2 py-0.5 rounded border text-[10px] flex items-center gap-1 ${
                             reqMastered
                               ? "border-green-500/10 bg-green-500/5 text-green-400"
-                              : "border-white/5 bg-white/2 text-gray-500"
+                              : "border-white/5 bg-white/[0.02] text-gray-500"
                           }`}
                         >
+                          {reqMastered
+                            ? <CheckCircle2 className="w-2.5 h-2.5" />
+                            : <Lock className="w-2.5 h-2.5" />}
                           {reqTopic?.name || pid}
+                          <span className={`font-bold ${
+                            reqMastered ? "text-green-400" : reqMastery > 0 ? "text-yellow-500" : "text-gray-600"
+                          }`}>
+                            {Math.round(reqMastery * 100)}%
+                          </span>
+                          {!reqMastered && <span className="text-gray-600">/80%</span>}
                         </span>
                       );
                     })}
                   </div>
                 )}
 
-                {/* Progress Mastery Bar & FSRS status */}
+                {/* Mastery Bar with 80% threshold */}
                 {!isLocked && (
                   <div className="pt-2 border-t border-border/30 mt-4 flex flex-col gap-3">
                     <div>
                       <div className="flex items-center justify-between text-xs mb-1.5">
                         <span className="text-gray-500 font-medium flex items-center gap-1">
                           <Brain className="w-3.5 h-3.5 text-primary" />
-                          Penguasaan Kognitif (BKT)
+                          Cognitive Mastery (BKT)
                         </span>
-                        <span
-                          className={`font-semibold ${
-                            isMastered ? "text-green-400" : isActive ? "text-primary" : "text-yellow-400"
-                          }`}
-                        >
+                        <span className={`font-bold text-sm ${
+                          isMastered ? "text-green-400" : isActive ? "text-primary" : "text-yellow-400"
+                        }`}>
                           {Math.round(nodeMastery * 100)}%
+                          <span className="text-gray-600 font-normal text-[10px] ml-1">
+                            {isMastered ? "✓ Mastered" : `/ 80% needed`}
+                          </span>
                         </span>
                       </div>
-                      <div className="w-full bg-white/3 rounded-full h-1.5">
+                      {/* Bar with 80% threshold marker */}
+                      <div className="relative w-full bg-white/[0.04] rounded-full h-2">
                         <div
-                          className={`h-1.5 rounded-full transition-all duration-500 ${
+                          className={`h-2 rounded-full transition-all duration-500 ${
                             isMastered
                               ? "bg-green-400"
                               : isActive
                               ? "bg-primary"
                               : "bg-yellow-400"
                           }`}
-                          style={{ width: `${nodeMastery * 100}%` }}
+                          style={{ width: `${Math.min(nodeMastery * 100, 100)}%` }}
                         />
+                        {/* 80% threshold marker */}
+                        {!isMastered && (
+                          <div
+                            className="absolute top-0 bottom-0 w-0.5 bg-green-400/60 rounded"
+                            style={{ left: "80%" }}
+                            title="Mastery threshold: 80%"
+                          >
+                            <span className="absolute -top-5 -translate-x-1/2 text-[9px] text-green-400/70 whitespace-nowrap font-medium">80%</span>
+                          </div>
+                        )}
                       </div>
                     </div>
+
+                    {/* Remedial attempt warning on active topic */}
+                    {isActive && !topic.is_remedial && (data.remedial_attempts ?? 0) > 0 && (
+                      <div className={`flex items-center gap-2 text-[11px] rounded-lg px-3 py-2 ${
+                        (data.remedial_attempts ?? 0) >= 2
+                          ? "bg-red-500/10 border border-red-500/20 text-red-400"
+                          : "bg-yellow-500/10 border border-yellow-500/20 text-yellow-400"
+                      }`}>
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        {(data.remedial_attempts ?? 0) >= 2
+                          ? <span><strong>Reinforcement exercise will be inserted</strong> — 2 incorrect answers detected on this topic.</span>
+                          : <span><strong>{data.remedial_attempts} incorrect answer detected.</strong> 1 more will trigger a Reinforcement Exercise.</span>
+                        }
+                      </div>
+                    )}
+
+                    {/* Remedial context on remedial node */}
+                    {isActive && topic.is_remedial && (
+                      <div className="flex items-center gap-2 text-[11px] rounded-lg px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-300">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-400" />
+                        <span>This Reinforcement Exercise was added because you had difficulty with the previous topic. Complete it to continue advancing.</span>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -475,7 +547,7 @@ export default function SyllabusPathPage() {
                         href="/chat"
                         className="inline-flex items-center gap-1 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-all shadow-[0_2px_10px_rgba(10,139,248,0.2)]"
                       >
-                        Lanjutkan Belajar <ArrowRight className="w-3.5 h-3.5" />
+                        Continue Learning <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     )}
                   </div>
@@ -520,8 +592,8 @@ export default function SyllabusPathPage() {
             {!isFlashcardDone ? (
               <div className="flex-1 flex flex-col space-y-6">
                 <div className="flex justify-between items-center text-xs text-gray-500">
-                  <span>Progress Ulasan</span>
-                  <span>{currentCardIdx + 1} dari {flashcards.length} Kartu</span>
+                  <span>Review Progress</span>
+                  <span>{currentCardIdx + 1} of {flashcards.length} Cards</span>
                 </div>
 
                 {/* 3D Flip Card Container */}
@@ -540,7 +612,7 @@ export default function SyllabusPathPage() {
                       <p className="text-sm font-bold text-foreground text-center">
                         {flashcards[currentCardIdx]?.q}
                       </p>
-                      <span className="text-[10px] text-gray-600 mt-4 italic">Klik kartu untuk melihat jawaban</span>
+                      <span className="text-[10px] text-gray-600 mt-4 italic">Click card to reveal answer</span>
                     </div>
 
                     {/* Sisi Belakang (Answer) */}
@@ -549,7 +621,7 @@ export default function SyllabusPathPage() {
                       <p className="text-sm text-gray-300 text-center leading-relaxed">
                         {flashcards[currentCardIdx]?.a}
                       </p>
-                      <span className="text-[10px] text-gray-600 mt-4 italic">Klik kartu untuk melihat pertanyaan</span>
+                      <span className="text-[10px] text-gray-600 mt-4 italic">Click card to see question</span>
                     </div>
                   </div>
                 </div>
@@ -561,11 +633,11 @@ export default function SyllabusPathPage() {
                       onClick={() => setIsFlipped(true)}
                       className="w-full bg-primary hover:bg-primary-hover text-white py-3 rounded-xl font-bold text-sm transition-all"
                     >
-                      Buka Jawaban
+                      Reveal Answer
                     </button>
                   ) : (
                     <div className="space-y-3 animate-[chat-fade-in_0.2s_ease-out]">
-                      <p className="text-center text-xs text-gray-500">Seberapa baik Anda mengingat konsep ini?</p>
+                      <p className="text-center text-xs text-gray-500">How well did you recall this concept?</p>
                       <div className="grid grid-cols-2 gap-2.5">
                         {/* Rating 1 - Again */}
                         <button
@@ -573,8 +645,8 @@ export default function SyllabusPathPage() {
                           disabled={isSubmittingRating}
                           className="flex flex-col items-center justify-center p-2.5 border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 hover:border-red-500/40 rounded-xl transition-all"
                         >
-                          <span className="text-xs font-bold text-red-400">Lupa Total</span>
-                          <span className="text-[9px] text-red-500/70 mt-0.5">Ulas segera (SM-2)</span>
+                          <span className="text-xs font-bold text-red-400">Forgot Completely</span>
+                          <span className="text-[9px] text-red-500/70 mt-0.5">Review now (SM-2)</span>
                         </button>
                         {/* Rating 2 - Hard */}
                         <button
@@ -582,8 +654,8 @@ export default function SyllabusPathPage() {
                           disabled={isSubmittingRating}
                           className="flex flex-col items-center justify-center p-2.5 border border-yellow-500/20 bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-500/40 rounded-xl transition-all"
                         >
-                          <span className="text-xs font-bold text-yellow-400">Ragu-ragu</span>
-                          <span className="text-[9px] text-yellow-500/70 mt-0.5">Ulas besok</span>
+                          <span className="text-xs font-bold text-yellow-400">Hesitant</span>
+                          <span className="text-[9px] text-yellow-500/70 mt-0.5">Review tomorrow</span>
                         </button>
                         {/* Rating 3 - Good */}
                         <button
@@ -591,8 +663,8 @@ export default function SyllabusPathPage() {
                           disabled={isSubmittingRating}
                           className="flex flex-col items-center justify-center p-2.5 border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 rounded-xl transition-all"
                         >
-                          <span className="text-xs font-bold text-primary">Ingat Baik</span>
-                          <span className="text-[9px] text-primary/70 mt-0.5">Ulas 4 hari lagi</span>
+                          <span className="text-xs font-bold text-primary">Remembered Well</span>
+                          <span className="text-[9px] text-primary/70 mt-0.5">Review in 4 days</span>
                         </button>
                         {/* Rating 4 - Easy */}
                         <button
@@ -600,8 +672,8 @@ export default function SyllabusPathPage() {
                           disabled={isSubmittingRating}
                           className="flex flex-col items-center justify-center p-2.5 border border-green-500/20 bg-green-500/5 hover:bg-green-500/10 hover:border-green-500/40 rounded-xl transition-all"
                         >
-                          <span className="text-xs font-bold text-green-400">Sangat Mudah</span>
-                          <span className="text-[9px] text-green-500/70 mt-0.5">Ulas 7 hari lagi</span>
+                          <span className="text-xs font-bold text-green-400">Very Easy</span>
+                          <span className="text-[9px] text-green-500/70 mt-0.5">Review in 7 days</span>
                         </button>
                       </div>
                     </div>
@@ -615,9 +687,9 @@ export default function SyllabusPathPage() {
                   <CheckCircle2 className="w-8 h-8 text-green-400" />
                 </div>
                 <div className="space-y-2">
-                  <h4 className="text-lg font-bold text-foreground">Sesi Ulasan Selesai</h4>
+                  <h4 className="text-lg font-bold text-foreground">Review Session Complete</h4>
                   <p className="text-xs text-gray-400 leading-relaxed max-w-sm">
-                    Hebat! Semua konsep kunci pada topik ini telah diulas. Penjadwalan ulasan memori Anda (SM-2) telah diperbarui di database kognitif.
+                    Great job! All key concepts for this topic have been reviewed. Your memory schedule (SM-2) has been updated in the cognitive database.
                   </p>
                 </div>
                 <button
@@ -628,7 +700,7 @@ export default function SyllabusPathPage() {
                   }}
                   className="w-full bg-primary hover:bg-primary-hover text-white py-3 rounded-xl font-bold text-sm transition-all"
                 >
-                  Selesai & Buka Silabus
+                  Done & Back to Learning Path
                 </button>
               </div>
             )}

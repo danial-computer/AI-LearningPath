@@ -77,8 +77,8 @@ export default function Dashboard() {
     averageMastery: 0,
     streak: 0,
     earlyWarning: {
-      status: "Aman",
-      description: "Pola klik stabil, risiko dropout rendah.",
+      status: "Safe",
+      description: "Click pattern stable, low dropout risk.",
       color: "text-green-400",
       bgBorder: "border-green-500/10 hover:border-green-500/25",
       icon: Shield
@@ -94,7 +94,7 @@ export default function Dashboard() {
     // Tampilkan tanggal hari ini secara lokal
     const now = new Date();
     setTodayString(
-      now.toLocaleDateString("id-ID", {
+      now.toLocaleDateString("en-US", {
         weekday: "long",
         day: "numeric",
         month: "long",
@@ -191,8 +191,8 @@ export default function Dashboard() {
 
     // 3. Peringatan Dini (Etika Dropout & Remedial Loop)
     let warning = {
-      status: "Aman",
-      description: "Pola klik stabil, risiko dropout rendah. Teruskan belajar!",
+      status: "Safe",
+      description: "Click pattern stable, low dropout risk. Keep it up!",
       color: "text-green-400",
       bgBorder: "border-green-500/10 hover:border-green-500/25",
       icon: Shield
@@ -203,16 +203,16 @@ export default function Dashboard() {
 
     if (hasRemedialActive) {
       warning = {
-        status: "Butuh Perhatian",
-        description: "Sistem mendeteksi hambatan belajar. Latihan remedial disisipkan.",
+        status: "Needs Attention",
+        description: "Learning barrier detected. Remedial exercise inserted.",
         color: "text-yellow-400",
         bgBorder: "border-yellow-500/20 hover:border-yellow-500/40 bg-yellow-500/[0.01]",
         icon: AlertTriangle
       };
     } else if (attempts >= 1) {
       warning = {
-        status: "Peringatan Dini",
-        description: "Satu kali kesalahan kuis terdeteksi. AI menyarankan tinjauan ulang.",
+        status: "Early Warning",
+        description: "One quiz error detected. AI recommends a review.",
         color: "text-yellow-500",
         bgBorder: "border-yellow-500/10 hover:border-yellow-500/25",
         icon: AlertTriangle
@@ -240,8 +240,8 @@ export default function Dashboard() {
     
     // Aktivitas 1: Setup Profil
     activities.push({
-      time: "Awal Sesi",
-      text: `Mulai belajar mata kuliah ${progress.course} dengan gaya ${progress.learning_style}`,
+      time: "Session Start",
+      text: `Started studying ${progress.course} with ${progress.learning_style} learning style`,
       Icon: CheckCircle2,
       color: "text-green-400"
     });
@@ -249,8 +249,8 @@ export default function Dashboard() {
     // Aktivitas 2: Topik Aktif
     if (progress.current_node) {
       activities.push({
-        time: "Sedang Dipelajari",
-        text: `Mempelajari konsep: ${progress.current_node.name}`,
+        time: "Currently Studying",
+        text: `Learning concept: ${progress.current_node.name}`,
         Icon: BookOpen,
         color: "text-blue-400"
       });
@@ -259,8 +259,8 @@ export default function Dashboard() {
     // Aktivitas 3: Remedial
     if (hasRemedialActive) {
       activities.push({
-        time: "Baru saja",
-        text: `AI mengalihkan jalur ke materi remedial: ${progress.current_node?.name}`,
+        time: "Just now",
+        text: `AI redirected learning path to remedial: ${progress.current_node?.name}`,
         Icon: AlertTriangle,
         color: "text-red-400"
       });
@@ -269,8 +269,8 @@ export default function Dashboard() {
     // Aktivitas 4: Flashcards
     if (reviewsCount > 0) {
       activities.push({
-        time: "Terbaru",
-        text: `Mengulas ${reviewsCount} topik menggunakan Spaced Repetition (SM-2)`,
+        time: "Recent",
+        text: `Reviewed ${reviewsCount} topics using Spaced Repetition (SM-2)`,
         Icon: Brain,
         color: "text-purple-400"
       });
@@ -294,7 +294,7 @@ export default function Dashboard() {
               style={{ animationDelay: "0.4s" }}
             />
           </div>
-          <span className="text-sm text-gray-400 font-medium">Memuat Dashboard...</span>
+          <span className="text-sm text-gray-400 font-medium">Loading Dashboard...</span>
         </div>
       </div>
     );
@@ -327,7 +327,7 @@ export default function Dashboard() {
             AI Learning Path
           </h1>
           <p className="text-base sm:text-lg text-gray-400 leading-relaxed">
-            Platform pembelajaran adaptif dengan Socratic AI Tutor, Knowledge Tracing (BKT), dan ulasan Flashcards Spaced Repetition (SM-2) untuk membantu kelulusan praktikum Anda.
+            An adaptive learning platform with Socratic AI Tutor, Knowledge Tracing (BKT), and Spaced Repetition Flashcard reviews (SM-2) to help you ace your practicum.
           </p>
         </div>
 
@@ -340,7 +340,7 @@ export default function Dashboard() {
             </div>
             <h3 className="font-bold text-foreground text-base">Socratic AI Tutor</h3>
             <p className="text-xs text-gray-400 leading-relaxed">
-              Diskusikan materi tanpa mendapatkan solusi kode langsung. AI akan membimbing Anda langkah demi langkah dengan pertanyaan pemantik dan visualisasi diagram.
+              Discuss topics without getting direct code solutions. The AI guides you step-by-step with thought-provoking questions and diagram visualizations.
             </p>
           </div>
 
@@ -349,9 +349,9 @@ export default function Dashboard() {
             <div className="p-2.5 bg-yellow-500/10 rounded-xl w-fit">
               <BookOpen className="w-5 h-5 text-yellow-400" />
             </div>
-            <h3 className="font-bold text-foreground text-base">Jalur Belajar Adaptif</h3>
+            <h3 className="font-bold text-foreground text-base">Adaptive Learning Path</h3>
             <p className="text-xs text-gray-400 leading-relaxed">
-              Tingkat kesulitan materi disesuaikan secara dinamis. Jika terdeteksi gagal berulang, AI menyisipkan latihan remedial khusus untuk memperkuat dasar pemahaman Anda.
+              Difficulty is dynamically adjusted. If repeated failures are detected, AI inserts a special remedial exercise to strengthen your foundational understanding.
             </p>
           </div>
 
@@ -362,7 +362,7 @@ export default function Dashboard() {
             </div>
             <h3 className="font-bold text-foreground text-base">Active Recall SM-2</h3>
             <p className="text-xs text-gray-400 leading-relaxed">
-              Konsep-konsep sulit yang telah dipelajari dijadwalkan ulasannya menggunakan algoritma SuperMemo-2 Flashcard untuk menjaga memori jangka panjang Anda.
+              Key concepts you've studied are scheduled for review using the SuperMemo-2 Flashcard algorithm to maintain your long-term memory.
             </p>
           </div>
         </div>
@@ -373,9 +373,9 @@ export default function Dashboard() {
             href="/chat"
             className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-[0_4px_25px_rgba(10,139,248,0.3)] hover:shadow-[0_4px_30px_rgba(10,139,248,0.55)] group"
           >
-            Pilih Mata Kuliah & Mulai Belajar <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            Choose a Course & Start Learning <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
-          <span className="text-[11px] text-gray-500 mt-3 font-medium">Buka halaman Chat AI untuk memilih profil belajar</span>
+          <span className="text-[11px] text-gray-500 mt-3 font-medium">Open Chat AI to select your learning profile</span>
         </div>
       </div>
     );
@@ -421,14 +421,14 @@ export default function Dashboard() {
         <div>
           <span className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-1.5 mb-1">
             <Activity className="w-3.5 h-3.5" />
-            Dasbor Belajar Waktu Nyata
+            Real-Time Learning Dashboard
           </span>
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-            Selamat Belajar Kembali!
+            Welcome Back!
           </h1>
           <p className="text-sm text-gray-400 mt-1 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-gray-500" />
-            {todayString} | Sesi: <code className="text-xs bg-white/5 px-2 py-0.5 rounded text-gray-400">{sessionId.slice(0, 8)}</code>
+            {todayString} | Session: <code className="text-xs bg-white/5 px-2 py-0.5 rounded text-gray-400">{sessionId.slice(0, 8)}</code>
           </p>
         </div>
 
@@ -436,7 +436,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full">
             <Flame className="w-5 h-5 text-orange-400 animate-pulse" />
             <span className="text-sm font-bold text-orange-300">
-              {metrics.streak} Hari Aktif
+              {metrics.streak} Active Days
             </span>
           </div>
         </div>
@@ -450,7 +450,7 @@ export default function Dashboard() {
             <div className="p-2 bg-blue-500/10 rounded-lg">
               <MousePointerClick className="w-4 h-4 text-blue-400" />
             </div>
-            <span className="text-sm text-gray-400">Total Interaksi VLE</span>
+            <span className="text-sm text-gray-400">Total VLE Interactions</span>
           </div>
 
           <div className="flex items-end justify-between gap-4">
@@ -459,7 +459,7 @@ export default function Dashboard() {
                 {metrics.totalClicks}
               </span>
               <p className="text-[10px] text-green-400 mt-1.5 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" /> Berdasarkan aktivitas chat
+                <TrendingUp className="w-3 h-3" /> Based on chat activity
               </p>
             </div>
 
@@ -494,13 +494,13 @@ export default function Dashboard() {
             <div className="p-2 bg-purple-500/10 rounded-lg">
               <GraduationCap className="w-4 h-4 text-purple-400" />
             </div>
-            <span className="text-sm text-gray-400">Mata Kuliah Aktif</span>
+            <span className="text-sm text-gray-400">Active Course</span>
           </div>
           <div>
             <span className="text-2xl font-bold text-foreground tracking-tight block truncate">
               {data.course}
             </span>
-            <span className="text-xs text-gray-500">Gaya: {data.learning_style}</span>
+            <span className="text-xs text-gray-500">Style: {data.learning_style}</span>
           </div>
         </div>
 
@@ -510,7 +510,7 @@ export default function Dashboard() {
             <div className="p-2 bg-green-500/10 rounded-lg">
               <TrendingUp className="w-4 h-4 text-green-400" />
             </div>
-            <span className="text-sm text-gray-400">Rata-rata Penguasaan</span>
+            <span className="text-sm text-gray-400">Average Mastery</span>
           </div>
 
           <div className="flex items-end justify-between gap-4">
@@ -547,7 +547,7 @@ export default function Dashboard() {
             <div className="p-2 bg-white/5 rounded-lg">
               <WarningIcon className={`w-4 h-4 ${metrics.earlyWarning.color}`} />
             </div>
-            <span className="text-sm text-gray-400">Proteksi Dropout</span>
+            <span className="text-sm text-gray-400">Dropout Protection</span>
           </div>
           <span className={`text-3xl font-extrabold tracking-tight ${metrics.earlyWarning.color}`}>
             {metrics.earlyWarning.status}
@@ -564,7 +564,7 @@ export default function Dashboard() {
         <div className="lg:col-span-3 bg-card p-6 rounded-2xl border border-border flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold">Kemajuan Topik Adaptif</h2>
+              <h2 className="text-lg font-bold">Adaptive Topic Progress</h2>
               <span className="text-[11px] text-gray-400 bg-white/5 border border-border/80 px-3 py-1 rounded-full">
                 Syllabus Progress: {progressPercent}%
               </span>
@@ -627,9 +627,9 @@ export default function Dashboard() {
           {/* Legend */}
           <div className="flex items-center gap-4 mt-6 pt-4 border-t border-border/40">
             {[
-              { c: "bg-green-400", l: "Tuntas (>=80%)" },
-              { c: "bg-yellow-400", l: "Proses (40%-79%)" },
-              { c: "bg-red-400", l: "Belum (0%-39%)" },
+              { c: "bg-green-400", l: "Mastered (≥80%)" },
+              { c: "bg-yellow-400", l: "In Progress (40%-79%)" },
+              { c: "bg-red-400", l: "Not Started (0%-39%)" },
             ].map((item) => (
               <div key={item.l} className="flex items-center gap-1.5">
                 <span className={`w-2 h-2 rounded-full ${item.c}`} />
@@ -643,7 +643,7 @@ export default function Dashboard() {
         <div className="lg:col-span-2 space-y-3">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-4 h-4 text-primary" />
-            <h2 className="text-lg font-bold">Rekomendasi AI Terfokus</h2>
+            <h2 className="text-lg font-bold">Focused AI Recommendations</h2>
           </div>
 
           {/* Rekomendasi 1: Latihan Aktif */}
@@ -654,13 +654,13 @@ export default function Dashboard() {
               </div>
               <div className="flex-1 min-w-0">
                 <span className={`text-[10px] font-bold uppercase tracking-wider ${currentNode.is_remedial ? "text-red-400 animate-pulse" : "text-primary"}`}>
-                  {currentNode.is_remedial ? "Tantangan Remedial Aktif" : "Topik Aktif Saat Ini"}
+                  {currentNode.is_remedial ? "Active Remedial Challenge" : "Current Active Topic"}
                 </span>
                 <p className="text-xs text-gray-300 mt-2 leading-relaxed">
-                  Lanjutkan sesi belajar di topik <strong className="text-foreground">{currentNode.name}</strong> bersama AI Tutor untuk memantapkan pemahaman Anda.
+                  Continue your study session on <strong className="text-foreground">{currentNode.name}</strong> with the AI Tutor to solidify your understanding.
                 </p>
                 <Link href="/chat" className={`mt-3.5 inline-flex items-center gap-1 text-[11px] font-bold hover:underline ${currentNode.is_remedial ? "text-red-400" : "text-primary"}`}>
-                  Lanjut Chat <ArrowRight className="w-3 h-3" />
+                  Continue Chat <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
             </div>
@@ -677,10 +677,10 @@ export default function Dashboard() {
                   Review Spaced Repetition
                 </span>
                 <p className="text-xs text-gray-300 mt-2 leading-relaxed">
-                  Buka Jalur Silabus dan gunakan tombol <strong className="text-foreground">Review Flashcard</strong> untuk menguji daya ingat jangka panjang Anda.
+                  Open Learning Path and use the <strong className="text-foreground">Review Flashcard</strong> button to test your long-term memory.
                 </p>
                 <Link href="/silabus" className="mt-3.5 inline-flex items-center gap-1 text-[11px] font-bold text-purple-400 hover:text-purple-300 hover:underline">
-                  Buka Silabus <ArrowRight className="w-3 h-3" />
+                  Open Learning Path <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
             </div>
@@ -693,24 +693,24 @@ export default function Dashboard() {
         {/* Peta Aktivitas Dinamis */}
         <div className="lg:col-span-3 bg-card p-6 rounded-2xl border border-border">
           <div className="flex items-center justify-between mb-1">
-            <h2 className="text-lg font-bold">Peta Aktivitas Belajar</h2>
+            <h2 className="text-lg font-bold">Learning Activity Map</h2>
             <span className="text-[11px] text-gray-500">
-              12 minggu terakhir
+              Last 12 weeks
             </span>
           </div>
           <p className="text-xs text-gray-400 mb-5 leading-relaxed">
-            Frekuensi interaksi belajar Anda pada VLE secara harian.
+            Your daily learning interaction frequency on the VLE.
           </p>
 
           <div className="overflow-x-auto -mx-2 px-2">
             <div className="flex gap-1.5 min-w-120">
               {/* Label hari */}
               <div className="flex flex-col gap-1 justify-between text-[10px] text-gray-500 pr-1 py-px shrink-0">
-                <span className="h-3 leading-3">Sen</span>
+                <span className="h-3 leading-3">Mon</span>
                 <span className="h-3 leading-3" />
-                <span className="h-3 leading-3">Rab</span>
+                <span className="h-3 leading-3">Wed</span>
                 <span className="h-3 leading-3" />
-                <span className="h-3 leading-3">Jum</span>
+                <span className="h-3 leading-3">Fri</span>
                 <span className="h-3 leading-3" />
                 <span className="h-3 leading-3" />
               </div>
@@ -729,21 +729,21 @@ export default function Dashboard() {
 
           {/* Legend */}
           <div className="flex items-center gap-1.5 mt-4 justify-end">
-            <span className="text-[10px] text-gray-500 mr-1">Rendah</span>
+            <span className="text-[10px] text-gray-500 mr-1">Low</span>
             {[0, 1, 2, 3].map((v) => (
               <div key={v} className={`w-2.5 h-2.5 rounded-sm ${heatCls(v)}`} />
             ))}
-            <span className="text-[10px] text-gray-500 ml-1">Tinggi</span>
+            <span className="text-[10px] text-gray-500 ml-1">High</span>
           </div>
         </div>
 
         {/* Aktivitas Terakhir */}
         <div className="lg:col-span-2 bg-card p-6 rounded-2xl border border-border flex flex-col justify-between">
           <div>
-            <h2 className="text-lg font-bold mb-5">Aktivitas Sesi Terakhir</h2>
+            <h2 className="text-lg font-bold mb-5">Last Session Activities</h2>
             <div className="space-y-4">
               {recentActivities.length === 0 ? (
-                <p className="text-xs text-gray-500 text-center py-6 italic">Belum ada aktivitas terekam</p>
+                <p className="text-xs text-gray-500 text-center py-6 italic">No activities recorded yet</p>
               ) : (
                 recentActivities.map((item, i) => (
                   <div key={i} className="flex items-start gap-3 group">
@@ -765,7 +765,7 @@ export default function Dashboard() {
           </div>
 
           <Link href="/chat" className="mt-5 w-full text-center text-xs font-semibold text-gray-400 hover:text-foreground py-2.5 rounded-xl border border-border/60 hover:border-border transition-all block">
-            Buka Konsol Chat AI
+            Open Chat AI Console
           </Link>
         </div>
       </div>

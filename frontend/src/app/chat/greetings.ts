@@ -1,37 +1,37 @@
-const NICKNAME = "Mahasiswa";
+const NICKNAME = "Scholar";
 
 const timeGreetings = {
   morning: [
-    `Selamat pagi, ${NICKNAME}! ☀️`,
-    `Good morning, ${NICKNAME}! Semangat belajar hari ini 💪`,
-    `Pagi, ${NICKNAME}! Siap belajar bareng?`,
-    `Halo ${NICKNAME}! Pagi yang cerah buat belajar nih`,
+    `Good morning, ${NICKNAME}! ☀️`,
+    `Morning, ${NICKNAME}! Ready to learn today? 💪`,
+    `Hey ${NICKNAME}! Great morning to study`,
+    `Rise and shine, ${NICKNAME}! Let's get started`,
   ],
   afternoon: [
-    `Selamat siang, ${NICKNAME}! ☀️`,
-    `Halo, ${NICKNAME}! Yuk lanjut belajar`,
-    `Siang, ${NICKNAME}! Ada yang bisa dibantu hari ini?`,
-    `Good afternoon, ${NICKNAME}! Semangat terus ya`,
+    `Good afternoon, ${NICKNAME}! ☀️`,
+    `Hey ${NICKNAME}! Keep up the great work`,
+    `Afternoon, ${NICKNAME}! What are we learning today?`,
+    `Good afternoon, ${NICKNAME}! Stay focused 💪`,
   ],
   evening: [
-    `Selamat malam, ${NICKNAME}! 🌙`,
-    `Good evening, ${NICKNAME}! Masih semangat belajar?`,
-    `Wilujeng wengi, ${NICKNAME}! 🌙`,
-    `Malam, ${NICKNAME}! Belajar malam memang tenang ya`,
+    `Good evening, ${NICKNAME}! 🌙`,
+    `Evening, ${NICKNAME}! Still grinding? 🔥`,
+    `Good evening, ${NICKNAME}! Night sessions hit different 🌙`,
+    `Hey ${NICKNAME}! Late night study session? Let's go`,
   ],
 };
 
 const funGreetings = [
-  `Oiii lama ga liat, ${NICKNAME}! Kangen belajar bareng nih 😄`,
-  `Wilujeng sumping, ${NICKNAME}! Siap grinding? 🔥`,
-  `Eh ${NICKNAME} udah dateng aja! Yuk langsung gas belajar 🚀`,
-  `Wah ${NICKNAME} balik lagi! Konsistensi adalah kunci 💎`,
-  `Heyy ${NICKNAME}! Tumben rajin nih, keren! 🌟`,
+  `Hey ${NICKNAME}, long time no see! Missed studying together 😄`,
+  `Welcome back, ${NICKNAME}! Ready to grind? 🔥`,
+  `Oh ${NICKNAME}'s here! Let's get straight to it 🚀`,
+  `${NICKNAME} is back! Consistency is key 💎`,
+  `Heyy ${NICKNAME}! Look at you showing up, legend! 🌟`,
 ];
 
-/** Subtitle hint ditampilkan di bawah greeting utama */
+/** Subtitle displayed below the main greeting */
 export const GREETING_SUBTITLE =
-  "Mau belajar apa hari ini? Tanya apapun tentang materi kuliahmu.";
+  "What do you want to learn today? Ask anything about your coursework.";
 
 /**
  * Generate a dynamic greeting based on time of day.
