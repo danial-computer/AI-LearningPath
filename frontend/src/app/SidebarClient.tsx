@@ -23,11 +23,11 @@ function getRelativeTime(timestamp: number): string {
   const m = Math.floor(diff / 60000);
   const h = Math.floor(diff / 3600000);
   const d = Math.floor(diff / 86400000);
-  if (m < 1) return "Baru saja";
-  if (m < 60) return `${m}m lalu`;
-  if (h < 24) return `${h}j lalu`;
-  if (d < 7) return `${d}h lalu`;
-  return new Date(timestamp).toLocaleDateString("id-ID", {
+  if (m < 1) return "Just now";
+  if (m < 60) return `${m}m ago`;
+  if (h < 24) return `${h}h ago`;
+  if (d < 7) return `${d}d ago`;
+  return new Date(timestamp).toLocaleDateString("en-US", {
     day: "numeric",
     month: "short",
   });
@@ -38,7 +38,53 @@ export default function SidebarClient() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string>("");
+  const [profile, setProfile] = useState<{ course: string; style: string }>({
+    course: "",
+    style: ""
+  });
   const popupRef = useRef<HTMLDivElement>(null);
+
+  // Fetch session configuration for profile display
+  useEffect(() => {
+    if (!activeId) return;
+
+    const fetchSessionInfo = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/api/progress", {
+          headers: {
+            "X-Session-ID": activeId
+          }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.configured) {
+            setProfile({
+              course: json.course || "",
+              style: json.learning_style || ""
+            });
+          } else {
+            setProfile({ course: "", style: "" });
+          }
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    fetchSessionInfo();
+
+    // Listen to custom chat events to reload profile info when configuration happens
+    const handleChatUpdate = () => {
+      fetchSessionInfo();
+    };
+
+    window.addEventListener("chat-history-updated", handleChatUpdate);
+    window.addEventListener("switch-conversation", handleChatUpdate);
+    return () => {
+      window.removeEventListener("chat-history-updated", handleChatUpdate);
+      window.removeEventListener("switch-conversation", handleChatUpdate);
+    };
+  }, [activeId]);
 
   // Load conversations from localStorage
   const loadConversations = () => {
@@ -102,6 +148,15 @@ export default function SidebarClient() {
     setConversations(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 
+    // Notify backend to clean up session state from memory
+    fetch("http://localhost:8000/api/session", {
+      method: "DELETE",
+      headers: { "X-Session-ID": id },
+    }).catch(() => {/* ignore if backend is offline */});
+
+    // Notify chat page to remove this conversation from its state
+    window.dispatchEvent(new CustomEvent("sidebar-deleted-chat", { detail: id }));
+
     if (id === activeId) {
       const newActive = updated[0]?.id ?? "";
       setActiveId(newActive);
@@ -112,6 +167,7 @@ export default function SidebarClient() {
     }
     window.dispatchEvent(new CustomEvent("chat-history-updated"));
   };
+
 
   const handleNewChat = () => {
     window.dispatchEvent(new CustomEvent("new-conversation"));
@@ -152,7 +208,7 @@ export default function SidebarClient() {
           }`}
         >
           <BookOpen className="w-5 h-5 text-gray-400" />
-          Jalur Silabus
+          Learning Path
         </Link>
 
         {/* Chat AI — with dropdown history */}
@@ -176,7 +232,7 @@ export default function SidebarClient() {
                 setHistoryOpen((prev) => !prev);
               }}
               className="p-2 mr-1 text-gray-400 hover:text-foreground hover:bg-border/60 rounded-lg transition-all"
-              title="Lihat riwayat chat"
+              title="View chat history"
             >
               <ChevronDown
                 className={`w-4 h-4 transition-transform duration-200 ${
@@ -194,10 +250,10 @@ export default function SidebarClient() {
                 <button
                   onClick={handleNewChat}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                  title="Chat baru"
+                  title="New chat"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  Chat baru
+                  New chat
                 </button>
                 <button
                   onClick={() => setHistoryOpen(false)}
@@ -211,7 +267,7 @@ export default function SidebarClient() {
               <div className="max-h-64 overflow-y-auto px-2 pb-2 space-y-0.5">
                 {conversations.length === 0 ? (
                   <p className="text-center text-xs text-gray-500 py-4">
-                    Belum ada percakapan
+                    No conversations yet
                   </p>
                 ) : (
                   conversations.map((conv) => (
@@ -231,7 +287,7 @@ export default function SidebarClient() {
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">
-                          {conv.title || "Chat baru"}
+                          {conv.title || "New chat"}
                         </p>
                         <p className="text-[10px] text-gray-600 mt-0.5">
                           {getRelativeTime(conv.updatedAt)}
@@ -243,7 +299,7 @@ export default function SidebarClient() {
                           handleDelete(conv.id);
                         }}
                         className="opacity-0 group-hover:opacity-100 p-1 text-gray-600 hover:text-red-400 rounded transition-all shrink-0"
-                        title="Hapus"
+                        title="Delete"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -259,10 +315,14 @@ export default function SidebarClient() {
       {/* User profile */}
       <div className="p-4 border-t border-border">
         <div className="flex items-center gap-3 px-4 py-3">
-          <UserCircle className="w-8 h-8 text-gray-400" />
-          <div>
-            <p className="text-sm font-medium">Mahasiswa ID</p>
-            <p className="text-xs text-gray-400">Tingkat: Distinction</p>
+          <UserCircle className="w-8 h-8 text-gray-400 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate text-foreground">
+              {profile.course ? `${profile.course}` : "Guest Learner"}
+            </p>
+            <p className="text-xs text-gray-400 truncate">
+              {profile.style ? `${profile.style} Learner` : "Session Not Started"}
+            </p>
           </div>
         </div>
       </div>

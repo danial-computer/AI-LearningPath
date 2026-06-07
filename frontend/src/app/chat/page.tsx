@@ -36,7 +36,9 @@ function loadConversations(): Conversation[] {
 function saveConversations(convs: Conversation[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(convs));
-    window.dispatchEvent(new CustomEvent("chat-history-updated"));
+    // NOTE: do NOT dispatch "chat-history-updated" here — it causes an
+    // infinite loop (persist effect → event → sidebar setState → re-render cycle).
+    // Sidebar is notified via targeted dispatches after intentional actions.
   } catch {
     // ignore
   }
@@ -100,7 +102,19 @@ export default function ChatPage() {
   useEffect(() => {
     const handleSwitch = (e: Event) => {
       const id = (e as CustomEvent<string>).detail;
-      if (id) { setActiveId(id); setInput(""); setFile(null); }
+      if (id) {
+        // Switch to existing conversation
+        setActiveId(id);
+        setInput("");
+        setFile(null);
+      } else {
+        // All chats deleted — auto-create a fresh one
+        const newConv = createNewConversation();
+        setConversations([newConv]);
+        setActiveId(newConv.id);
+        setInput("");
+        setFile(null);
+      }
     };
     const handleNew = () => {
       const newConv = createNewConversation();
@@ -109,11 +123,18 @@ export default function ChatPage() {
       setInput("");
       setFile(null);
     };
+    // Sync conversations state when sidebar deletes a chat
+    const handleChatDeleted = (e: Event) => {
+      const deletedId = (e as CustomEvent<string>).detail;
+      setConversations((prev) => prev.filter((c) => c.id !== deletedId));
+    };
     window.addEventListener("switch-conversation", handleSwitch);
     window.addEventListener("new-conversation", handleNew);
+    window.addEventListener("sidebar-deleted-chat", handleChatDeleted);
     return () => {
       window.removeEventListener("switch-conversation", handleSwitch);
       window.removeEventListener("new-conversation", handleNew);
+      window.removeEventListener("sidebar-deleted-chat", handleChatDeleted);
     };
   }, []);
 
@@ -151,7 +172,7 @@ export default function ChatPage() {
             c.title ||
             userMsg.content.slice(0, 40) ||
             file?.name.slice(0, 40) ||
-            "Lampiran",
+            "Attachment",
           updatedAt: Date.now(),
         };
       })
@@ -177,13 +198,19 @@ export default function ChatPage() {
         formData.append("file", currentFile);
         const res = await fetch("http://localhost:8000/api/chat", {
           method: "POST",
+          headers: {
+            "X-Session-ID": activeId,
+          },
           body: formData,
         });
         data = await res.json();
       } else {
         const res = await fetch("http://localhost:8000/api/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-Session-ID": activeId,
+          },
           body: JSON.stringify({ message: userMsg.content }),
         });
         data = await res.json();
@@ -233,11 +260,13 @@ export default function ChatPage() {
           };
         })
       );
+      // Notify sidebar to refresh title/timestamp after bot reply
+      window.dispatchEvent(new CustomEvent("chat-history-updated"));
     } catch {
       const errorMsg: Message = {
         role: "bot",
         content:
-          "Maaf, server backend tidak dapat dihubungi. Pastikan FastAPI sudah berjalan di port 8000.",
+          "Unable to reach the backend server. Make sure FastAPI is running on port 8000.",
         timestamp: Date.now(),
       };
       setConversations((prev) =>
@@ -285,7 +314,7 @@ export default function ChatPage() {
             Socratic AI Tutor
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">
-            Chatbot cerdas dengan Ethical Guardrails
+            Intelligent chatbot with Ethical Guardrails
           </p>
           <div className="flex items-center gap-1.5 mt-1.5">
             <Hash className="w-3.5 h-3.5 text-gray-600" />
@@ -294,7 +323,7 @@ export default function ChatPage() {
                 {roomTitle}
               </span>
             ) : (
-              <span className="text-sm text-gray-600 italic">Chat baru</span>
+              <span className="text-sm text-gray-600 italic">New chat</span>
             )}
           </div>
         </div>

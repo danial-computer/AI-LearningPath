@@ -1,8 +1,8 @@
 [
   {
     "id": "SD_01_INTRO_BIGO",
-    "name": "Introduction & Big O Notation",
-    "description": "Pengenalan struktur data, analisis algoritma, pemahaman kompleksitas waktu dan ruang menggunakan notasi Big O (O(1), O(log n), O(n), O(n log n), O(n^2)).",
+    "name": "Introduction to Data Structures & Big O Notation",
+    "description": "Overview of common data structures and their use cases. Understanding time and space complexity using Big O notation (O(1), O(log n), O(n), O(n log n), O(n^2)) to evaluate data structure efficiency.",
     "difficulty": 0.4,
     "est_minutes": 90,
     "prerequisites": []
@@ -10,7 +10,7 @@
   {
     "id": "SD_02_ARRAY",
     "name": "Arrays & Multi-dimensional Arrays",
-    "description": "Representasi data dalam memori linier, alokasi statik vs dinamis, operasi penelusuran (traversal), penyisipan (insertion), penghapusan (deletion), dan array dua dimensi.",
+    "description": "Linear data representation in memory, static vs dynamic allocation, traversal, insertion, deletion operations, and two-dimensional arrays.",
     "difficulty": 0.3,
     "est_minutes": 90,
     "prerequisites": ["SD_01_INTRO_BIGO"]
@@ -18,23 +18,23 @@
   {
     "id": "SD_03_LINKED_LIST",
     "name": "Linked Lists (Single & Double)",
-    "description": "Konsep struktur data dinamis menggunakan Node dan Pointer, implementasi Single Linked List, Double Linked List, penyisipan/penghapusan di awal/tengah/akhir.",
+    "description": "Dynamic data structures using Nodes and Pointers. Implementation of Single Linked List and Double Linked List, including insertion and deletion at the head, middle, and tail.",
     "difficulty": 0.6,
     "est_minutes": 180,
     "prerequisites": ["SD_02_ARRAY"]
   },
   {
     "id": "SD_04_STACK",
-    "name": "Stack (Tumpukan)",
-    "description": "Memahami konsep LIFO (Last In First Out), operasi Push, Pop, Peek, serta aplikasinya seperti konversi ekspresi (Infix ke Postfix) dan Undo/Redo.",
+    "name": "Stack",
+    "description": "Understanding the LIFO (Last In First Out) principle, Push, Pop, and Peek operations, and real-world applications such as expression conversion (Infix to Postfix) and Undo/Redo functionality.",
     "difficulty": 0.5,
     "est_minutes": 120,
     "prerequisites": ["SD_03_LINKED_LIST"]
   },
   {
     "id": "SD_05_QUEUE",
-    "name": "Queue (Antrean)",
-    "description": "Memahami konsep FIFO (First In First Out), operasi Enqueue dan Dequeue, variasi Queue (Circular Queue, Priority Queue, Deque).",
+    "name": "Queue",
+    "description": "Understanding the FIFO (First In First Out) principle, Enqueue and Dequeue operations, and Queue variants including Circular Queue, Priority Queue, and Deque.",
     "difficulty": 0.5,
     "est_minutes": 120,
     "prerequisites": ["SD_03_LINKED_LIST"]
@@ -42,7 +42,7 @@
   {
     "id": "SD_06_TREE_BST",
     "name": "Binary Trees & Binary Search Tree (BST)",
-    "description": "Konsep struktur data hirarkis non-linier. Memahami terminologi Tree, Binary Tree, operasi BST (insert, search, delete), dan penelusuran Tree (Inorder, Preorder, Postorder).",
+    "description": "Non-linear hierarchical data structures. Understanding Tree terminology, Binary Tree concepts, BST operations (insert, search, delete), and tree traversal methods (Inorder, Preorder, Postorder).",
     "difficulty": 0.7,
     "est_minutes": 180,
     "prerequisites": ["SD_04_STACK", "SD_05_QUEUE"]
@@ -50,7 +50,7 @@
   {
     "id": "SD_07_GRAPH",
     "name": "Graphs & Representations",
-    "description": "Representasi jaringan data non-linier menggunakan Graph. Memahami Vertex, Edge, Arah, serta representasinya menggunakan Adjacency Matrix dan Adjacency List.",
+    "description": "Representing non-linear network data using Graphs. Understanding Vertices, Edges, direction, and graph representations using Adjacency Matrix and Adjacency List.",
     "difficulty": 0.8,
     "est_minutes": 150,
     "prerequisites": ["SD_06_TREE_BST"]
@@ -58,7 +58,7 @@
   {
     "id": "SD_08_SEARCHING",
     "name": "Searching Algorithms (Linear & Binary)",
-    "description": "Algoritma pencarian data linier (Linear Search) dan pencarian biner pada data terurut (Binary Search) beserta analisis efisiensi Big O-nya.",
+    "description": "Linear search on unsorted data and Binary Search on sorted data, along with their Big O complexity analysis and practical implementation.",
     "difficulty": 0.4,
     "est_minutes": 90,
     "prerequisites": ["SD_02_ARRAY"]
@@ -66,7 +66,7 @@
   {
     "id": "SD_09_SORTING",
     "name": "Sorting Algorithms (Basic & Advanced)",
-    "description": "Mempelajari algoritma pengurutan data sederhana (Bubble, Selection, Insertion) dan algoritma tingkat lanjut (Merge Sort, Quick Sort).",
+    "description": "Basic sorting algorithms (Bubble Sort, Selection Sort, Insertion Sort) and advanced algorithms (Merge Sort, Quick Sort) with complexity comparison.",
     "difficulty": 0.6,
     "est_minutes": 180,
     "prerequisites": ["SD_02_ARRAY"]

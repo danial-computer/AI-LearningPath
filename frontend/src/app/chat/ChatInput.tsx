@@ -85,7 +85,7 @@ export default function ChatInput({
             <button
               onClick={() => onFileChange(null)}
               className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-              title="Hapus file"
+              title="Remove file"
             >
               <X className="w-4 h-4" />
             </button>
@@ -100,7 +100,7 @@ export default function ChatInput({
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled}
             className="p-4 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-            title="Lampirkan file"
+            title="Attach file"
           >
             <Paperclip className="w-5 h-5" />
           </button>
@@ -122,7 +122,7 @@ export default function ChatInput({
               adjustHeight();
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Tanyakan sesuatu materi atau minta kuis latihan..."
+            placeholder="Ask about a topic or request a practice quiz..."
             rows={1}
             className="flex-1 bg-card border border-border rounded-xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder-gray-500 resize-none overflow-y-auto leading-relaxed"
             style={{ maxHeight: "150px" }}
@@ -147,8 +147,7 @@ export default function ChatInput({
         </div>
 
         <p className="text-center text-[11px] text-gray-600 mt-2">
-          Enter untuk kirim · Shift+Enter untuk baris baru · 📎 untuk lampirkan
-          file
+          Press Enter to send · Shift+Enter for new line · 📎 to attach a file
         </p>
       </div>
     </div>

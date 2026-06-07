@@ -1,2 +1,18 @@
 # Abaikan virtual environment backend
 backend/venv/
+
+# Environment variables
+.env
+.env.*
+backend/.env
+
+# Python cache and files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.vscode/
+.idea/
+.DS_Store
+uploads/
