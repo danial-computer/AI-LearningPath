@@ -115,7 +115,7 @@ export default function Dashboard() {
   const fetchProgress = async (sid: string) => {
     try {
       setIsLoading(true);
-      const res = await fetch("http://localhost:8000/api/progress", {
+      const res = await fetch((`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/progress`), {
         headers: {
           "X-Session-ID": sid,
         },

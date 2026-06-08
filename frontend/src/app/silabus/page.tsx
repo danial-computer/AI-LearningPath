@@ -73,7 +73,7 @@ export default function SyllabusPathPage() {
   const fetchProgress = async (sid: string) => {
     try {
       setIsLoading(true);
-      const res = await fetch("http://localhost:8000/api/progress", {
+      const res = await fetch((`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/progress`), {
         headers: {
           "X-Session-ID": sid,
         },
@@ -102,7 +102,7 @@ export default function SyllabusPathPage() {
   // Load flashcards untuk topik tertentu
   const openFlashcards = async (topic: Topic) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/flashcards?topic_id=${topic.id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/flashcards?topic_id=${topic.id}`);
       if (res.ok) {
         const cardsData = await res.json();
         setFlashcards(cardsData.cards || []);
@@ -122,7 +122,7 @@ export default function SyllabusPathPage() {
     setIsSubmittingRating(true);
 
     try {
-      const res = await fetch("http://localhost:8000/api/flashcard/review", {
+      const res = await fetch((`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/flashcard/review`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

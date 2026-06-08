@@ -50,7 +50,7 @@ export default function SidebarClient() {
 
     const fetchSessionInfo = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/progress", {
+        const res = await fetch((`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/progress`), {
           headers: {
             "X-Session-ID": activeId
           }
@@ -149,7 +149,7 @@ export default function SidebarClient() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 
     // Notify backend to clean up session state from memory
-    fetch("http://localhost:8000/api/session", {
+    fetch((`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/session`), {
       method: "DELETE",
       headers: { "X-Session-ID": id },
     }).catch(() => {/* ignore if backend is offline */});

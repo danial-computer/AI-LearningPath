@@ -196,7 +196,7 @@ export default function ChatPage() {
         const formData = new FormData();
         formData.append("message", userMsg.content || "(File dikirim)");
         formData.append("file", currentFile);
-        const res = await fetch("http://localhost:8000/api/chat", {
+        const res = await fetch((`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/chat`), {
           method: "POST",
           headers: {
             "X-Session-ID": activeId,
@@ -205,7 +205,7 @@ export default function ChatPage() {
         });
         data = await res.json();
       } else {
-        const res = await fetch("http://localhost:8000/api/chat", {
+        const res = await fetch((`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/chat`), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
