@@ -8,12 +8,12 @@
 | No | Notebook | Status | Deskripsi |
 | :---: | :--- | :---: | :--- |
 | 1 | [01_eda_comprehensive.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/01_eda_comprehensive.ipynb) | ✅ Selesai | EDA komprehensif 7 dataset OULAD (62 cells, 114KB) |
-| 2 | [02_knowledge_graph_path.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/02_knowledge_graph_path.ipynb) | 🔲 Belum | Knowledge Graph (DAG) + Topological Sort + Path Generator |
-| 3 | [03_knowledge_tracing.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/03_knowledge_tracing.ipynb) | 🔲 Belum | Bayesian Knowledge Tracing (pyBKT) + 5-Fold CV |
-| 4 | [04_spaced_repetition_pipeline.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/04_spaced_repetition_pipeline.ipynb) | 🔲 Belum | FSRS Scheduler + CLI Chatbot Simulator + Ethical Guardrails |
-| 5 | Silabus Praktikum (3 JSON) | 🔲 Belum | DAG kurikulum untuk Orarkom, Database I, Struktur Data |
-| 6 | Backend (FastAPI) | 🔲 Belum | REST API `/api/chat`, `/api/recommend`, `/api/submit-quiz` |
-| 7 | Frontend (Next.js Web UI) | 🔲 Belum | Chat interface + Progress Tree + Tooltip Cards |
+| 2 | [02_knowledge_graph_path.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/02_knowledge_graph_path.ipynb) | ✅ Selesai | Knowledge Graph (DAG) + Topological Sort + Path Generator |
+| 3 | [03_knowledge_tracing.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/03_knowledge_tracing.ipynb) | ✅ Selesai | Bayesian Knowledge Tracing (pyBKT) + 5-Fold CV |
+| 4 | [04_spaced_repetition_pipeline.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/04_spaced_repetition_pipeline.ipynb) | ✅ Selesai | FSRS Scheduler + CLI Chatbot Simulator + Ethical Guardrails |
+| 5 | Silabus Praktikum (3 JSON) | ✅ Selesai | DAG kurikulum untuk Orarkom, Database I, Struktur Data |
+| 6 | Backend (FastAPI) | ✅ Selesai | REST API `/api/chat`, `/api/recommend`, `/api/submit-quiz` |
+| 7 | Frontend (Next.js Web UI) | ✅ Selesai | Chat interface + Progress Tree + Tooltip Cards |
 
 ### Berkas Pendukung
 
