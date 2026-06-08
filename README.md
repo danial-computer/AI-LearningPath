@@ -1,6 +1,6 @@
-# 🎓 AI Learning Path & Socratic Chatbot
+# 🎓 AI Learning Path & Smart AI Chatbot
 
-Sistem ini adalah platform **Pembelajaran Adaptif Berbasis AI** yang menggabungkan analisis data pendidikan (OULAD), algoritma *Spaced Repetition* (FSRS), *Knowledge Tracing*, dan *Socratic Chatbot* yang dilengkapi dengan *Ethical Guardrails*.
+Sistem ini adalah platform **Pembelajaran Adaptif Berbasis AI** yang menggabungkan analisis data pendidikan (OULAD), algoritma *Spaced Repetition* (FSRS), *Knowledge Tracing*, dan *Smart AI Chatbot* yang dilengkapi dengan *Ethical Guardrails*.
 
 Proyek ini dibangun dengan arsitektur pemisahan modern:
 - **Notebooks**: Eksperimen Machine Learning, Analisis Data (EDA), & Pemodelan Kurikulum (Knowledge Graph).
@@ -91,7 +91,7 @@ Frontend bertugas menampilkan antarmuka grafis (UI) yang interaktif kepada mahas
 
 ## 🤖 Menghubungkan LLM (Gemini API)
 *Catatan: Secara default, fitur Chatbot pada repositori ini menggunakan simulasi (dummy data).*
-Jika Anda ingin menghidupkan kemampuan AI Socratic Tutor sungguhan, Anda perlu:
+Jika Anda ingin menghidupkan kemampuan AI Smart AI Tutor sungguhan, Anda perlu:
 1. Memiliki API Key dari Google Gemini Studio.
 2. Memasukkan API Key tersebut ke dalam file konfigurasi atau `.env` di folder `backend/` nantinya saat integrasi LLM penuh diaktifkan.
 

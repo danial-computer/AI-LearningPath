@@ -202,7 +202,7 @@ FLASHCARDS_DB = {
 
 def get_flashcards(topic_id: str):
     return FLASHCARDS_DB.get(topic_id, [
-        {"q": f"Explain the main principle of '{topic_id}'?", "a": "The core principles of this topic can be explored interactively with the Socratic AI Tutor in the chat."},
+        {"q": f"Explain the main principle of '{topic_id}'?", "a": "The core principles of this topic can be explored interactively with the Smart AI AI Tutor in the chat."},
         {"q": f"How is the concept of '{topic_id}' applied in practice?", "a": "Try practice exercises, quizzes, or ask for implementation examples in the chat room."}
     ])
 
@@ -338,7 +338,7 @@ def parse_initial_selection(msg_text: str):
 
     if any(has_word(msg_lower, k) for k in ["visual", "interactive", "interaktif", "diagram", "a"]):
         style = "Visual"
-    elif any(has_word(msg_lower, k) for k in ["auditory", "auditorial", "socratic", "dialogue", "dialog", "tanya", "b"]):
+    elif any(has_word(msg_lower, k) for k in ["auditory", "auditorial", "smart AI", "dialogue", "dialog", "tanya", "b"]):
         style = "Auditorial"
     elif any(has_word(msg_lower, k) for k in ["practical", "praktikal", "coding", "koding", "code", "praktek", "latihan", "c"]):
         style = "Praktikal"
@@ -351,15 +351,15 @@ def get_system_instruction(course: str, learning_style: str, current_node: dict,
     node_desc = current_node.get("description", "No description available")
 
     instruction = (
-        "You are an intelligent, empathetic, and interactive Socratic AI Tutor for an adaptive learning platform.\n"
+        "You are an intelligent, empathetic, and interactive Smart AI AI Tutor for an adaptive learning platform.\n"
         f"Course: {course}\n"
         f"Current Topic: {node_name}\n"
         f"Topic Description: {node_desc}\n"
         f"Student's Cognitive Mastery Probability on this topic: {mastery:.0%}\n\n"
 
-        "--- ETHICS & TUTORING RULES (SOCRATIC GUARDRAIL) ---\n"
+        "--- ETHICS & TUTORING RULES (SMART AI GUARDRAIL) ---\n"
         "1. NEVER give direct coding answers or raw solutions that students can copy-paste.\n"
-        "2. If a student asks for a full answer or code, politely decline and guide them step-by-step using Socratic questions.\n"
+        "2. If a student asks for a full answer or code, politely decline and guide them step-by-step using Smart AI questions.\n"
         "3. Ask about their initial understanding, provide pseudocode snippets or small hints, and ask them to write the code themselves.\n"
         "4. Always evaluate student answers critically but constructively.\n\n"
     )
@@ -373,7 +373,7 @@ def get_system_instruction(course: str, learning_style: str, current_node: dict,
         )
     elif learning_style == "Auditorial":
         instruction += (
-            "--- LEARNING STYLE: AUDITORY & SOCRATIC DIALOGUE ---\n"
+            "--- LEARNING STYLE: AUDITORY & SMART AI DIALOGUE ---\n"
             "- Use a highly interactive and conversational tone, as if you are a personal tutor speaking directly.\n"
             "- Use real-world analogies to explain abstract concepts.\n"
             "- End your explanations with thought-provoking discussion questions that guide students to find their own answers.\n\n"
@@ -422,7 +422,7 @@ def simulate_ai_response(prompt: str) -> str:
     
     if any(k in prompt_lower for k in ["answer", "code", "solution", "jawaban", "kodingan", "buatkan"]):
         return (
-            "🔍 [Socratic Guardrail]\n"
+            "🔍 [Smart AI Guardrail]\n"
             "As an AI Tutor, I can't give direct code answers to protect academic integrity.\n"
             "But I can give you hints. Try thinking about:\n"
             "1. What input parameters are needed?\n"
@@ -733,7 +733,7 @@ async def chat_with_ai(
 
                 style_title = {
                     "Visual": "Visual & Interactive",
-                    "Auditorial": "Auditory & Socratic Dialogue",
+                    "Auditorial": "Auditory & Smart AI Dialogue",
                     "Praktikal": "Practical & Coding-Focused"
                 }[session.learning_style]
 
@@ -765,9 +765,9 @@ async def chat_with_ai(
                 "3. **Data Structures**\n\n"
                 "**Learning Style Options:**\n"
                 "*   **A. Visual & Interactive**: Uses concept visualizations, ASCII diagrams, and flowcharts.\n"
-                "*   **B. Auditory & Socratic Dialogue**: Uses guided Q&A discussion to develop your understanding.\n"
+                "*   **B. Auditory & Smart AI Dialogue**: Uses guided Q&A discussion to develop your understanding.\n"
                 "*   **C. Practical & Coding-Focused**: Uses code snippets, hands-on exercises, and pseudocode.\n\n"
-                "*You can reply like this: **'1 and A'** or **'Data Structures with Socratic style'**.*"
+                "*You can reply like this: **'1 and A'** or **'Data Structures with Smart AI style'**.*"
             )
         elif session.course is None:
             reply = (
@@ -783,7 +783,7 @@ async def chat_with_ai(
                 f"Your course has been set to **{session.course}**.\n"
                 "Now, please choose your preferred learning style:\n\n"
                 "*   **A. Visual & Interactive**: Uses concept visualizations, ASCII diagrams, and flowcharts.\n"
-                "*   **B. Auditory & Socratic Dialogue**: Uses guided Q&A discussion to develop your understanding.\n"
+                "*   **B. Auditory & Smart AI Dialogue**: Uses guided Q&A discussion to develop your understanding.\n"
                 "*   **C. Practical & Coding-Focused**: Uses code snippets, hands-on exercises, and pseudocode.\n\n"
                 "*Reply with **A**, **B**, or **C**.*"
             )

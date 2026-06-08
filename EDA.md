@@ -281,7 +281,7 @@ graph TD
     KG -->|"Topological Sort<br/>DAG prereqs"| PATH["Path Generator"]
     KT -->|"P(mastery) per<br/>Knowledge Component"| PATH
     PATH --> CHATBOT["RAG Chatbot<br/>(Gemini API)"]
-    BIAS -->|"Socratic Guard<br/>Challenge Injection<br/>Human Override"| CHATBOT
+    BIAS -->|"Smart AI Guard<br/>Challenge Injection<br/>Human Override"| CHATBOT
 
     style EDA fill:#2ecc71,color:#fff
     style KG fill:#3498db,color:#fff
