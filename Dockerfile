@@ -3,11 +3,14 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Menginstal dependency
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True pip install --no-cache-dir -r requirements.txt
 
-# Menyalin seluruh kode backend
+# Menyalin seluruh kode repository
 COPY . .
+
+# Berpindah ke folder backend untuk menjalankan server
+WORKDIR /app/backend
 
 # Membuat folder sessions dan uploads jika belum ada
 RUN mkdir -p sessions uploads
