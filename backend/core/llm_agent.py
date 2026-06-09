@@ -133,38 +133,107 @@ def simulate_ai_response(prompt: str, session = None) -> str:
     )
 
 # ─── Helper: Memanggil Real Gemini API ───
-def generate_ai_response(system_instruction: str, prompt: str, history=None, session=None) -> str:
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        return simulate_ai_response(prompt, session)
+def generate_ai_response(system_instruction: str, prompt: str, history=None) -> str:
+    import os
+    # Kumpulkan semua API Key dari environment
+    api_keys = []
+    base_key = os.environ.get("GEMINI_API_KEY")
+    if base_key and base_key.strip() != "":
+        api_keys.append(base_key.strip())
+    
+    for i in range(1, 10):
+        k = os.environ.get(f"GEMINI_API_KEY_{i}")
+        if k and k.strip() != "" and k.strip() not in api_keys:
+            api_keys.append(k.strip())
+            
+    if not api_keys:
+        return "⚠️ **API key error.**\n\nTidak ada Gemini API Key yang ditemukan di `.env`."
 
-    try:
-        client = genai.Client(api_key=api_key)
-        config = types.GenerateContentConfig(
-            system_instruction=system_instruction,
-            temperature=0.7,
-        )
-        
-        contents = []
-        if history:
-            for msg in history[-10:]:
-                role = "user" if msg["role"] == "user" else "model"
-                contents.append(types.Content(
-                    role=role,
-                    parts=[types.Part.from_text(text=msg["content"])]
-                ))
+    MODELS = [
+        ("gemini-2.5-flash",    "v1beta"),
+        ("gemini-1.5-flash",    "v1"),
+        ("gemini-1.5-pro",      "v1"),
+    ]
+
+    contents = []
+    if history:
+        for msg in history[-10:]:
+            role = "user" if msg["role"] == "user" else "model"
+            contents.append(types.Content(
+                role=role,
+                parts=[types.Part.from_text(text=msg["content"])]
+            ))
+    contents.append(types.Content(
+        role="user",
+        parts=[types.Part.from_text(text=prompt)]
+    ))
+
+    last_error = None
+    for api_key in api_keys:
+        for model_name, api_version in MODELS:
+            try:
+                client = genai.Client(
+                    api_key=api_key,
+                    http_options={"api_version": api_version}
+                )
+
+                if api_version == "v1beta":
+                    config = types.GenerateContentConfig(
+                        system_instruction=system_instruction,
+                        temperature=0.7,
+                    )
+                    model_contents = contents
+                else:
+                    config = types.GenerateContentConfig(temperature=0.7)
+                    system_turn = types.Content(
+                        role="user",
+                        parts=[types.Part.from_text(
+                            text=f"[System Instructions — follow these throughout the conversation]\n{system_instruction}"
+                        )]
+                    )
+                    ack_turn = types.Content(
+                        role="model",
+                        parts=[types.Part.from_text(text="Understood. I will follow these instructions throughout our conversation.")]
+                    )
+                    model_contents = [system_turn, ack_turn] + contents
+
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=model_contents,
+                    config=config
+                )
+                if model_name != "gemini-2.5-flash":
+                    print(f"[Cascade] Using fallback model: {model_name}")
+                return response.text
+            except Exception as e:
+                err_str = str(e)
+                print(f"Gemini API Error [{model_name}] dengan kunci tertentu: {e}")
+                if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "404" in err_str or "NOT_FOUND" in err_str or "503" in err_str:
+                    last_error = e
+                    continue # Lanjut ke model berikutnya, atau ke key berikutnya jika model habis
                 
-        contents.append(types.Content(
-            role="user",
-            parts=[types.Part.from_text(text=prompt)]
-        ))
-        
-        response = client.models.generate_content(
-            model='gemini-3.5-flash',
-            contents=contents,
-            config=config
+                last_error = e
+                break # Hard error (auth/network), stop looping model
+        else:
+            # Jika loop model habis karena Resource Exhausted/404, lanjut ke API KEY berikutnya
+            print("Beralih ke API Key cadangan berikutnya...")
+            continue
+            
+        # Jika loop break (Hard error), hentikan pencarian key juga
+        break
+
+    err_str = str(last_error) if last_error else ""
+    if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+        return (
+            "⚠️ **Sistem sedang mengalami antrean tinggi (High Demand).**\n\n"
+            "Semua kunci cadangan API telah mencapai batas maksimal (Rate Limit). Harap tunggu sekitar 1 menit lalu coba lagi."
         )
-        return response.text
-    except Exception as e:
-        print(f"Gemini API Error: {e}")
-        return f"⚠️ [Sistem: Error Gemini API]\n\nDetail: {str(e)}\n\n(Fallback ke mode simulasi):\n" + simulate_ai_response(prompt, session)
+    elif "503" in err_str or "UNAVAILABLE" in err_str:
+        return "⚠️ **Server AI sedang kelebihan beban.**\n\nSilakan coba lagi dalam beberapa detik."
+    elif "401" in err_str or "API_KEY" in err_str:
+        return "⚠️ **Error API Key.**\n\nKonfigurasi API Key ditolak. Periksa kembali file `.env` Anda."
+    else:
+        return "⚠️ **Terjadi kesalahan saat menghubungi AI.**\n\nSilakan coba lagi sebentar lagi."
+
+
+
