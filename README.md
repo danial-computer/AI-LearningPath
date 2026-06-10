@@ -1,12 +1,3 @@
----
-title: AI Learning Path
-emoji: 🎓
-colorFrom: blue
-colorTo: indigo
-sdk: docker
-app_port: 7860
-pinned: false
----
 # 🎓 AI Learning Path & Smart AI Chatbot
 
 Sistem ini adalah platform **Pembelajaran Adaptif Berbasis AI** yang menggabungkan analisis data pendidikan (OULAD), algoritma *Spaced Repetition* (FSRS), *Knowledge Tracing*, dan *Smart AI Chatbot* yang dilengkapi dengan *Ethical Guardrails*.
