@@ -451,13 +451,16 @@ def generate_ai_response(system_instruction: str, prompt: str, history=None) -> 
     if base_key and base_key.strip() != "":
         api_keys.append(base_key.strip())
     
-    for i in range(1, 10):
+    for i in range(1, 11):
         k = os.environ.get(f"GEMINI_API_KEY_{i}")
         if k and k.strip() != "" and k.strip() not in api_keys:
             api_keys.append(k.strip())
             
     if not api_keys:
         return "⚠️ **API key error.**\n\nTidak ada Gemini API Key yang ditemukan di `.env`."
+
+    import random
+    random.shuffle(api_keys)
 
     MODELS = [
         ("gemini-2.5-flash",    "v1beta"),
@@ -693,7 +696,8 @@ async def chat_with_ai(
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        file_url = f"http://localhost:8000/uploads/{unique_name}"
+        base_url = str(request.base_url).rstrip("/")
+        file_url = f"{base_url}/uploads/{unique_name}"
         file_name = file.filename
         file_size = os.path.getsize(file_path)
         file_type = file.content_type or "application/octet-stream"

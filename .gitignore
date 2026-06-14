@@ -18,3 +18,8 @@ __pycache__/
 uploads/
 dataset/
 *.pkl
+
+# Temporary patch scripts
+backend/patch.py
+backend/patch_rag.py
+fix_hf.py
