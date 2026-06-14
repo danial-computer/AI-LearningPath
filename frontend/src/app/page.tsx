@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 import {
   Activity,
   MousePointerClick,
@@ -115,8 +116,10 @@ export default function Dashboard() {
   const fetchProgress = async (sid: string) => {
     try {
       setIsLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch((`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/progress`), {
         headers: {
+          "Authorization": `Bearer ${session?.access_token || ""}`,
           "X-Session-ID": sid,
         },
       });

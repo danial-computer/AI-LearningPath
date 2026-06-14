@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 import {
   BookOpen,
   ArrowRight,
@@ -73,8 +74,10 @@ export default function SyllabusPathPage() {
   const fetchProgress = async (sid: string) => {
     try {
       setIsLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch((`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/progress`), {
         headers: {
+          "Authorization": `Bearer ${session?.access_token || ""}`,
           "X-Session-ID": sid,
         },
       });
@@ -122,10 +125,12 @@ export default function SyllabusPathPage() {
     setIsSubmittingRating(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch((`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/flashcard/review`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token || ""}`,
           "X-Session-ID": sessionId,
         },
         body: JSON.stringify({

@@ -5,13 +5,16 @@ import uuid
 import json
 import time
 import networkx as nx
-from fastapi import FastAPI, UploadFile, File, Form, Request, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from google import genai
 from google.genai import types
+
+from supabase import create_client, Client
+from core.auth import get_current_user
 
 # ─── Load Environment Variables ───
 def load_env():
@@ -67,52 +70,75 @@ class UserSession:
         self.syllabus = []              # Daftar lengkap topik
         self.graph = None               # DAG Prerequisite dari NetworkX
 
-# ─── Registry Sesi: session_id -> {"session_state": UserSession, "chat_history": list} ───
+# ─── Registry Sesi: user_id_session_id -> {"session_state": UserSession, "chat_history": list} ───
 session_registry = {}
 
-# ─── Persistent Session Storage ───
-def _session_path(session_id: str) -> str:
-    """Return the JSON file path for a given session ID."""
-    safe_id = session_id.replace("/", "_").replace("\\", "_")
-    return os.path.join(SESSIONS_DIR, f"{safe_id}.json")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-def save_session_to_disk(session_id: str):
-    """Persist session state + chat history to a JSON file."""
-    if session_id not in session_registry:
-        return
-    entry = session_registry[session_id]
-    session: UserSession = entry["session_state"]
-    data = {
-        "session_state": {
-            "course": session.course,
-            "learning_style": session.learning_style,
-            "current_node": session.current_node,
-            "mastery": session.mastery,
-            "fsrs_cards": session.fsrs_cards,
-            "remedial_attempts": session.remedial_attempts,
-            "override_active": session.override_active,
-            "override_node": session.override_node,
-            "syllabus": session.syllabus,
-            # graph is excluded — rebuilt from syllabus on load
-        },
-        "chat_history": entry["chat_history"]
-    }
+supabase_client: Client = None
+if SUPABASE_URL and SERVICE_ROLE_KEY:
     try:
-        with open(_session_path(session_id), "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        supabase_client = create_client(SUPABASE_URL, SERVICE_ROLE_KEY)
+        print("[Supabase] Client initialized successfully.")
     except Exception as e:
-        print(f"[Session] Failed to save session {session_id}: {e}")
+        print(f"[Supabase Warning] Failed to initialize client: {e}")
+else:
+    print("[Supabase Warning] SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set. DB storage disabled.")
 
-def load_session_from_disk(session_id: str) -> bool:
-    """Load session from JSON file into session_registry. Returns True if found."""
-    path = _session_path(session_id)
-    if not os.path.exists(path):
+def save_session_to_db(user_id: str, session_id: str):
+    registry_key = f"{user_id}_{session_id}"
+    if registry_key not in session_registry:
+        return
+    entry = session_registry[registry_key]
+    session: UserSession = entry["session_state"]
+    session_data = {
+        "course": session.course,
+        "learning_style": session.learning_style,
+        "current_node": session.current_node,
+        "mastery": session.mastery,
+        "fsrs_cards": session.fsrs_cards,
+        "remedial_attempts": session.remedial_attempts,
+        "override_active": session.override_active,
+        "override_node": session.override_node,
+        "syllabus": session.syllabus,
+    }
+    chat_history = entry["chat_history"]
+    
+    if not supabase_client:
+        return
+        
+    try:
+        supabase_client.table("user_sessions").upsert({
+            "user_id": user_id,
+            "session_id": session_id,
+            "session_data": session_data,
+            "chat_history": chat_history,
+            "updated_at": "now()"
+        }, on_conflict="user_id,session_id").execute()
+        print(f"[Supabase] Saved session {session_id[:8]}... for user {user_id[:8]}...")
+    except Exception as e:
+        print(f"[Supabase Error] Failed to save session {session_id}: {e}")
+
+def load_session_from_db(user_id: str, session_id: str) -> bool:
+    registry_key = f"{user_id}_{session_id}"
+    if not supabase_client:
         return False
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        response = supabase_client.table("user_sessions")\
+            .select("session_data, chat_history")\
+            .eq("user_id", user_id)\
+            .eq("session_id", session_id)\
+            .execute()
+        
+        if not response.data or len(response.data) == 0:
+            return False
+            
+        row = response.data[0]
+        state = row.get("session_data", {})
+        chat_history = row.get("chat_history", [])
+        
         s = UserSession()
-        state = data.get("session_state", {})
         s.course = state.get("course")
         s.learning_style = state.get("learning_style")
         s.current_node = state.get("current_node")
@@ -122,10 +148,9 @@ def load_session_from_disk(session_id: str) -> bool:
         s.override_active = state.get("override_active", False)
         s.override_node = state.get("override_node")
         s.syllabus = state.get("syllabus", [])
+        
         # Rebuild NetworkX graph from syllabus
         if s.syllabus:
-            G, _ = load_syllabus_graph.__wrapped__(s.syllabus) if hasattr(load_syllabus_graph, '__wrapped__') else (None, [])
-            # Rebuild graph manually
             import networkx as nx
             G = nx.DiGraph()
             for topic in s.syllabus:
@@ -135,28 +160,28 @@ def load_session_from_disk(session_id: str) -> bool:
                     if G.has_node(prereq):
                         G.add_edge(prereq, topic["id"])
             s.graph = G
-        session_registry[session_id] = {
+            
+        session_registry[registry_key] = {
             "session_state": s,
-            "chat_history": data.get("chat_history", [])
+            "chat_history": chat_history
         }
-        print(f"[Session] Loaded session {session_id[:8]}... from disk")
+        print(f"[Supabase] Loaded session {session_id[:8]}... from DB")
         return True
     except Exception as e:
-        print(f"[Session] Failed to load session {session_id}: {e}")
+        print(f"[Supabase Error] Failed to load session {session_id}: {e}")
         return False
 
-def get_session(session_id: str):
+def get_session(user_id: str, session_id: str):
     if not session_id:
         session_id = "default_session"
-    if session_id not in session_registry:
-        # Try loading from disk first
-        if not load_session_from_disk(session_id):
-            # Brand new session
-            session_registry[session_id] = {
+    registry_key = f"{user_id}_{session_id}"
+    if registry_key not in session_registry:
+        if not load_session_from_db(user_id, session_id):
+            session_registry[registry_key] = {
                 "session_state": UserSession(),
                 "chat_history": []
             }
-    return session_registry[session_id]["session_state"], session_registry[session_id]["chat_history"]
+    return session_registry[registry_key]["session_state"], session_registry[registry_key]["chat_history"]
 
 # ─── Database Flashcards Statik untuk Active Recall ───
 FLASHCARDS_DB = {
@@ -561,37 +586,48 @@ def health_check():
 
 # ─── Endpoint: Reset Session ───
 @app.post("/api/reset")
-def reset_session(request: Request):
+def reset_session(request: Request, current_user: dict = Depends(get_current_user)):
+    user_id = current_user["user_id"]
     session_id = request.headers.get("X-Session-ID", "default_session")
-    session_registry[session_id] = {
+    registry_key = f"{user_id}_{session_id}"
+    session_registry[registry_key] = {
         "session_state": UserSession(),
         "chat_history": []
     }
-    save_session_to_disk(session_id)
+    save_session_to_db(user_id, session_id)
     return {"status": "ok", "message": f"Session '{session_id}' has been reset."}
 
 # ─── Endpoint: Delete Session ───
 @app.delete("/api/session")
-def delete_session(request: Request):
+def delete_session(request: Request, current_user: dict = Depends(get_current_user)):
+    user_id = current_user["user_id"]
     session_id = request.headers.get("X-Session-ID", "default_session")
-    if session_id in session_registry:
-        del session_registry[session_id]
-    # Always try to remove the file, even if not in memory
-    path = _session_path(session_id)
-    if os.path.exists(path):
+    registry_key = f"{user_id}_{session_id}"
+    
+    if registry_key in session_registry:
+        del session_registry[registry_key]
+        
+    if supabase_client:
         try:
-            os.remove(path)
+            supabase_client.table("user_sessions")\
+                .delete()\
+                .eq("user_id", user_id)\
+                .eq("session_id", session_id)\
+                .execute()
+            return {"status": "ok", "message": f"Session '{session_id}' has been deleted."}
         except Exception as e:
-            print(f"[Session] Failed to delete file for {session_id}: {e}")
-        return {"status": "ok", "message": f"Session '{session_id}' has been deleted."}
+            print(f"[Supabase Error] Delete session failed: {e}")
+            raise HTTPException(status_code=500, detail="Gagal menghapus sesi dari database")
+            
     return {"status": "not_found", "message": f"Session '{session_id}' not found."}
 
 
 # ─── Endpoint: Ambil Kemajuan Siswa (Real-time untuk Jalur Silabus) ───
 @app.get("/api/progress")
-def get_progress(request: Request):
+def get_progress(request: Request, current_user: dict = Depends(get_current_user)):
+    user_id = current_user["user_id"]
     session_id = request.headers.get("X-Session-ID", "default_session")
-    session, _ = get_session(session_id)
+    session, _ = get_session(user_id, session_id)
     
     if not session.course:
         return {"configured": False}
@@ -619,9 +655,10 @@ class ReviewRequest(BaseModel):
     rating: int
 
 @app.post("/api/flashcard/review")
-def review_flashcard(req: ReviewRequest, request: Request):
+def review_flashcard(req: ReviewRequest, request: Request, current_user: dict = Depends(get_current_user)):
+    user_id = current_user["user_id"]
     session_id = request.headers.get("X-Session-ID", "default_session")
-    session, _ = get_session(session_id)
+    session, _ = get_session(user_id, session_id)
     
     if req.topic_id not in session.mastery:
         session.mastery[req.topic_id] = 0.5
@@ -638,6 +675,8 @@ def review_flashcard(req: ReviewRequest, request: Request):
         old_m = session.mastery.get(req.topic_id, 0.5)
         session.mastery[req.topic_id] = max(0.01, old_m - 0.10)
         
+    save_session_to_db(user_id, session_id)
+        
     return {
         "status": "ok",
         "message": "FSRS SM-2 state updated",
@@ -651,7 +690,9 @@ async def chat_with_ai(
     request: Request,
     message: str = Form(None),
     file: UploadFile = File(None),
+    current_user: dict = Depends(get_current_user)
 ):
+    user_id = current_user["user_id"]
     content_type = request.headers.get("content-type", "")
     
     # 1. Parsing Input (JSON vs Form Data)
@@ -669,15 +710,17 @@ async def chat_with_ai(
 
     # Ambil Session ID dari headers
     session_id = request.headers.get("X-Session-ID", "default_session")
-    session, chat_history = get_session(session_id)
+    registry_key = f"{user_id}_{session_id}"
+    session, chat_history = get_session(user_id, session_id)
 
     # 2. Intersep Command Reset
     if user_message.strip().lower() == "/reset":
-        if session_id in session_registry:
-            session_registry[session_id] = {
+        if registry_key in session_registry:
+            session_registry[registry_key] = {
                 "session_state": UserSession(),
                 "chat_history": []
             }
+        save_session_to_db(user_id, session_id)
         reply = "🔄 **Sesi belajar telah di-reset.** Silakan pilih kembali mata kuliah dan gaya belajar Anda dengan mengirimkan pesan baru."
         return _build_response(reply, None, None, None, None)
 
@@ -915,10 +958,10 @@ async def chat_with_ai(
                         "The entire syllabus has been completed. You can review any topic anytime or choose a new course by typing **/reset**."
                     )
 
-    # 7. Save chat history & persist session to disk
+    # 7. Save chat history & persist session to DB
     chat_history.append({"role": "user", "content": user_message})
     chat_history.append({"role": "bot", "content": ai_reply})
-    save_session_to_disk(session_id)
+    save_session_to_db(user_id, session_id)
 
     return _build_response(ai_reply, file_url, file_name, file_size, file_type)
 
@@ -930,3 +973,47 @@ def _build_response(reply: str, file_url, file_name, file_size, file_type):
         response["file_size"] = file_size
         response["file_type"] = file_type
     return response
+
+
+# ─── Endpoint: Hapus Akun Pengguna ───
+@app.delete("/api/delete-account")
+async def delete_account(current_user: dict = Depends(get_current_user)):
+    user_id = current_user["user_id"]
+    
+    SUPABASE_URL = os.getenv("SUPABASE_URL")
+    SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    
+    if not SUPABASE_URL or not SERVICE_ROLE_KEY:
+        raise HTTPException(
+            status_code=500, 
+            detail="Koneksi admin database (Supabase URL atau Service Role Key) belum dikonfigurasi di server."
+        )
+        
+    import httpx
+    
+    # API Admin Supabase Auth untuk menghapus user
+    url = f"{SUPABASE_URL}/auth/v1/admin/users/{user_id}"
+    headers = {
+        "Authorization": f"Bearer {SERVICE_ROLE_KEY}",
+        "apikey": SERVICE_ROLE_KEY,
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(url, headers=headers)
+        
+        if response.status_code != 200:
+            print(f"[Supabase Error] Gagal hapus user {user_id}: Status {response.status_code}, Body: {response.text}")
+            raise HTTPException(status_code=400, detail="Gagal menghapus akun pengguna dari Supabase.")
+            
+        # Bersihkan memori registry sesi untuk user ini
+        keys_to_delete = [k for k in session_registry.keys() if k.startswith(f"{user_id}_")]
+        for k in keys_to_delete:
+            del session_registry[k]
+            
+        return {"status": "ok", "message": "Akun Anda beserta semua data belajar telah berhasil dihapus permanen."}
+        
+    except Exception as e:
+        print(f"[Delete Account Error] {e}")
+        raise HTTPException(status_code=500, detail=f"Terjadi kesalahan saat menghapus akun: {str(e)}")

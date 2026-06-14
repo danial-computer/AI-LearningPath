@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { supabase } from "@/lib/supabase";
 import { Bot, Hash } from "lucide-react";
 import ChatBubble from "./ChatBubble";
 import ChatInput from "./ChatInput";
@@ -192,6 +193,9 @@ export default function ChatPage() {
         file_type?: string;
       };
 
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || "";
+
       if (currentFile) {
         const formData = new FormData();
         formData.append("message", userMsg.content || "(File dikirim)");
@@ -199,6 +203,7 @@ export default function ChatPage() {
         const res = await fetch((`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/chat`), {
           method: "POST",
           headers: {
+            "Authorization": `Bearer ${token}`,
             "X-Session-ID": activeId,
           },
           body: formData,
@@ -209,6 +214,7 @@ export default function ChatPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
             "X-Session-ID": activeId,
           },
           body: JSON.stringify({ message: userMsg.content }),
