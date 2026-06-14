@@ -88,7 +88,7 @@ export default function SyllabusPathPage() {
       setData(progressJson);
     } catch (err: any) {
       setError(
-        "Gagal menghubungi server backend. Pastikan FastAPI berjalan di port 8000."
+        `Gagal menghubungi server backend (${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}). Error: ${err.message || err}`
       );
       console.error(err);
     } finally {
