@@ -1,0 +1,74 @@
+[
+  {
+    "id": "SD_01_INTRO_BIGO",
+    "name": "Introduction to Data Structures & Big O Notation",
+    "description": "Overview of common data structures and their use cases. Understanding time and space complexity using Big O notation (O(1), O(log n), O(n), O(n log n), O(n^2)) to evaluate data structure efficiency.",
+    "difficulty": 0.4,
+    "est_minutes": 90,
+    "prerequisites": []
+  },
+  {
+    "id": "SD_02_ARRAY",
+    "name": "Arrays & Multi-dimensional Arrays",
+    "description": "Linear data representation in memory, static vs dynamic allocation, traversal, insertion, deletion operations, and two-dimensional arrays.",
+    "difficulty": 0.3,
+    "est_minutes": 90,
+    "prerequisites": ["SD_01_INTRO_BIGO"]
+  },
+  {
+    "id": "SD_03_LINKED_LIST",
+    "name": "Linked Lists (Single & Double)",
+    "description": "Dynamic data structures using Nodes and Pointers. Implementation of Single Linked List and Double Linked List, including insertion and deletion at the head, middle, and tail.",
+    "difficulty": 0.6,
+    "est_minutes": 180,
+    "prerequisites": ["SD_02_ARRAY"]
+  },
+  {
+    "id": "SD_04_STACK",
+    "name": "Stack",
+    "description": "Understanding the LIFO (Last In First Out) principle, Push, Pop, and Peek operations, and real-world applications such as expression conversion (Infix to Postfix) and Undo/Redo functionality.",
+    "difficulty": 0.5,
+    "est_minutes": 120,
+    "prerequisites": ["SD_03_LINKED_LIST"]
+  },
+  {
+    "id": "SD_05_QUEUE",
+    "name": "Queue",
+    "description": "Understanding the FIFO (First In First Out) principle, Enqueue and Dequeue operations, and Queue variants including Circular Queue, Priority Queue, and Deque.",
+    "difficulty": 0.5,
+    "est_minutes": 120,
+    "prerequisites": ["SD_03_LINKED_LIST"]
+  },
+  {
+    "id": "SD_06_TREE_BST",
+    "name": "Binary Trees & Binary Search Tree (BST)",
+    "description": "Non-linear hierarchical data structures. Understanding Tree terminology, Binary Tree concepts, BST operations (insert, search, delete), and tree traversal methods (Inorder, Preorder, Postorder).",
+    "difficulty": 0.7,
+    "est_minutes": 180,
+    "prerequisites": ["SD_04_STACK", "SD_05_QUEUE"]
+  },
+  {
+    "id": "SD_07_GRAPH",
+    "name": "Graphs & Representations",
+    "description": "Representing non-linear network data using Graphs. Understanding Vertices, Edges, direction, and graph representations using Adjacency Matrix and Adjacency List.",
+    "difficulty": 0.8,
+    "est_minutes": 150,
+    "prerequisites": ["SD_06_TREE_BST"]
+  },
+  {
+    "id": "SD_08_SEARCHING",
+    "name": "Searching Algorithms (Linear & Binary)",
+    "description": "Linear search on unsorted data and Binary Search on sorted data, along with their Big O complexity analysis and practical implementation.",
+    "difficulty": 0.4,
+    "est_minutes": 90,
+    "prerequisites": ["SD_02_ARRAY"]
+  },
+  {
+    "id": "SD_09_SORTING",
+    "name": "Sorting Algorithms (Basic & Advanced)",
+    "description": "Basic sorting algorithms (Bubble Sort, Selection Sort, Insertion Sort) and advanced algorithms (Merge Sort, Quick Sort) with complexity comparison.",
+    "difficulty": 0.6,
+    "est_minutes": 180,
+    "prerequisites": ["SD_02_ARRAY"]
+  }
+]
