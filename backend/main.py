@@ -792,7 +792,7 @@ async def chat_with_ai(
                 )
                 chat_history.append({"role": "user", "content": user_message})
                 chat_history.append({"role": "bot", "content": reply})
-                save_session_to_disk(session_id)
+                save_session_to_db(user_id, session_id)
                 return _build_response(reply, file_url, file_name, file_size, file_type)
             else:
                 session.course = None
@@ -832,7 +832,7 @@ async def chat_with_ai(
                 "*   **C. Practical & Coding-Focused**: Uses code snippets, hands-on exercises, and pseudocode.\n\n"
                 "*Reply with **A**, **B**, or **C**.*"
             )
-        save_session_to_disk(session_id)
+        save_session_to_db(user_id, session_id)
         return _build_response(reply, file_url, file_name, file_size, file_type)
 
     # 5. Percakapan Utama dengan Gemini API
