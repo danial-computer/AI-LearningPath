@@ -70,7 +70,7 @@ function buildHeatmap(timestamps: number[]): number[][] {
     .fill(null)
     .map(() => Array(12).fill(0));
   const now = new Date();
-  const dayOfWeek = (now.getDay() + 6) % 7;
+  const dayOfWeek = (now.getDay() + 6) % 7; // Mon=0, Sun=6
   const weekStart = new Date(now);
   weekStart.setDate(now.getDate() - dayOfWeek);
   weekStart.setHours(0, 0, 0, 0);
@@ -96,6 +96,64 @@ function buildHeatmap(timestamps: number[]): number[][] {
     ),
   );
 }
+
+// ─── DEV MOCK: sample data untuk preview UI tanpa backend ───
+const DEV_MOCK: ProgressData = {
+  configured: true,
+  course: "Algoritma & Pemrograman",
+  learning_style: "Visual",
+  current_node: {
+    id: "topic-2",
+    name: "Sorting Algorithms",
+    description: "Bubble, merge, quick sort",
+    difficulty: 3,
+    est_minutes: 45,
+    prerequisites: ["topic-1"],
+    is_remedial: false,
+  },
+  mastery: {
+    "topic-1": 0.92,
+    "topic-2": 0.48,
+    "topic-3": 0.15,
+    "topic-4": 0.0,
+  },
+  syllabus: [
+    {
+      id: "topic-1",
+      name: "Arrays & Linked Lists",
+      description: "",
+      difficulty: 2,
+      est_minutes: 30,
+      prerequisites: [],
+    },
+    {
+      id: "topic-2",
+      name: "Sorting Algorithms",
+      description: "",
+      difficulty: 3,
+      est_minutes: 45,
+      prerequisites: ["topic-1"],
+    },
+    {
+      id: "topic-3",
+      name: "Tree Structures",
+      description: "",
+      difficulty: 4,
+      est_minutes: 60,
+      prerequisites: ["topic-2"],
+    },
+    {
+      id: "topic-4",
+      name: "Graph Algorithms",
+      description: "",
+      difficulty: 5,
+      est_minutes: 90,
+      prerequisites: ["topic-3"],
+    },
+  ],
+  fsrs_cards: { "topic-1": {} },
+  remedial_attempts: 0,
+};
 
 export default function Dashboard() {
   const [data, setData] = useState<ProgressData | null>(null);
@@ -308,9 +366,17 @@ export default function Dashboard() {
         if (progressJson.configured) {
           calculateDynamicMetrics(progressJson, sid);
         }
+      } else if (process.env.NODE_ENV === "development") {
+        // API gagal di dev — pakai mock agar active state bisa dipreview
+        setData(DEV_MOCK);
+        calculateDynamicMetrics(DEV_MOCK, sid);
       }
     } catch (err) {
       console.error("Gagal mengambil data progress dashboard:", err);
+      if (process.env.NODE_ENV === "development") {
+        setData(DEV_MOCK);
+        calculateDynamicMetrics(DEV_MOCK, sid);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -346,6 +412,7 @@ export default function Dashboard() {
     );
   }
 
+  // ─── ZERO STATE ───
   if (!data || !data.configured) {
     return (
       <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-8 animate-[chat-fade-in_0.4s_ease-out] flex flex-col justify-center min-h-[85vh] relative overflow-hidden">
@@ -479,6 +546,7 @@ export default function Dashboard() {
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
+          {/* Active Course Badge */}
           <div className="flex items-center gap-2.5 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full">
             <GraduationCap className="w-4 h-4 text-purple-400 shrink-0" />
             <div className="leading-tight">
@@ -490,6 +558,7 @@ export default function Dashboard() {
               </span>
             </div>
           </div>
+          {/* Streak Badge */}
           <div className="flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full">
             <Flame className="w-5 h-5 text-orange-400 animate-pulse" />
             <span className="text-sm font-bold text-orange-300">
@@ -838,15 +907,25 @@ export default function Dashboard() {
           >
             <div className="flex items-start gap-3">
               <div
-                className={`mt-0.5 p-1.5 rounded-lg shrink-0 ${currentNode.is_remedial ? "bg-red-500/10" : "bg-primary/10"}`}
+                className={`mt-0.5 p-1.5 rounded-lg shrink-0 ${
+                  currentNode.is_remedial ? "bg-red-500/10" : "bg-primary/10"
+                }`}
               >
                 <Zap
-                  className={`w-4 h-4 ${currentNode.is_remedial ? "text-red-400 animate-pulse" : "text-primary"}`}
+                  className={`w-4 h-4 ${
+                    currentNode.is_remedial
+                      ? "text-red-400 animate-pulse"
+                      : "text-primary"
+                  }`}
                 />
               </div>
               <div className="flex-1 min-w-0">
                 <span
-                  className={`text-[10px] font-bold uppercase tracking-wider ${currentNode.is_remedial ? "text-red-400 animate-pulse" : "text-primary"}`}
+                  className={`text-[10px] font-bold uppercase tracking-wider ${
+                    currentNode.is_remedial
+                      ? "text-red-400 animate-pulse"
+                      : "text-primary"
+                  }`}
                 >
                   {currentNode.is_remedial
                     ? "Active Remedial Challenge"
@@ -861,7 +940,9 @@ export default function Dashboard() {
                 </p>
                 <Link
                   href="/chat"
-                  className={`mt-3.5 inline-flex items-center gap-1 text-[11px] font-bold hover:underline ${currentNode.is_remedial ? "text-red-400" : "text-primary"}`}
+                  className={`mt-3.5 inline-flex items-center gap-1 text-[11px] font-bold hover:underline ${
+                    currentNode.is_remedial ? "text-red-400" : "text-primary"
+                  }`}
                 >
                   Continue Chat <ArrowRight className="w-3 h-3" />
                 </Link>
