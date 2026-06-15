@@ -320,7 +320,8 @@ export default function ChatPage() {
     } catch {
       const errorMsg: Message = {
         role: "bot",
-        content: "Unable to reach the backend server. Make sure FastAPI is running on port 8000.",
+        content:
+          `Unable to reach the backend server (${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}). Please make sure the backend is running and accessible.`,
         timestamp: Date.now(),
       };
       setConversations((prev) =>

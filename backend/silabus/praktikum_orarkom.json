@@ -1,0 +1,66 @@
+[
+  {
+    "id": "OR_01_REPRESENTASI",
+    "name": "Data Representation (Binary, Octal, Hexadecimal)",
+    "description": "Understanding binary, octal, and hexadecimal number systems, conversion between number systems, and signed integer representation using Two's Complement.",
+    "difficulty": 0.3,
+    "est_minutes": 90,
+    "prerequisites": []
+  },
+  {
+    "id": "OR_02_GERBANG_LOGIKA",
+    "name": "Logic Gates & Boolean Algebra",
+    "description": "Understanding basic logic gates (AND, OR, NOT, NAND, NOR, XOR, XNOR) and simplifying Boolean functions using Boolean Algebra laws and Karnaugh Maps (K-Map).",
+    "difficulty": 0.4,
+    "est_minutes": 120,
+    "prerequisites": ["OR_01_REPRESENTASI"]
+  },
+  {
+    "id": "OR_03_KOMBINA_SEKUEN",
+    "name": "Combinational & Sequential Circuits",
+    "description": "Studying combinational circuits (Adder, Subtractor, Multiplexer, Decoder) and sequential circuits (Latch, Flip-Flop, Register, Counter) and their applications.",
+    "difficulty": 0.5,
+    "est_minutes": 150,
+    "prerequisites": ["OR_02_GERBANG_LOGIKA"]
+  },
+  {
+    "id": "OR_04_ARSITEKTUR_CPU",
+    "name": "CPU Architecture & Instruction Cycle",
+    "description": "Understanding internal CPU components including ALU, Control Unit, and Register File, and how instructions are processed through the Fetch-Decode-Execute cycle.",
+    "difficulty": 0.6,
+    "est_minutes": 120,
+    "prerequisites": ["OR_03_KOMBINA_SEKUEN"]
+  },
+  {
+    "id": "OR_05_ASSEMBLY_BASIC",
+    "name": "Basic Assembly Language",
+    "description": "Introduction to fundamental Assembly instructions (MOV, ADD, SUB, INC, DEC) and general-purpose CPU registers (e.g., EAX, EBX, ECX, EDX).",
+    "difficulty": 0.7,
+    "est_minutes": 180,
+    "prerequisites": ["OR_04_ARSITEKTUR_CPU"]
+  },
+  {
+    "id": "OR_06_ASSEMBLY_BRANCH",
+    "name": "Assembly Branching & Loops",
+    "description": "Understanding conditional and unconditional jump instructions (JMP, JE, JNE, JG, JL) and implementing loops and control flow in Assembly language.",
+    "difficulty": 0.8,
+    "est_minutes": 180,
+    "prerequisites": ["OR_05_ASSEMBLY_BASIC"]
+  },
+  {
+    "id": "OR_07_MEMORI",
+    "name": "Memory Hierarchy & Cache",
+    "description": "Studying the computer memory hierarchy (Registers, Cache L1/L2/L3, RAM, ROM, Secondary Storage) and Cache mapping techniques (Direct, Associative, Set-Associative).",
+    "difficulty": 0.6,
+    "est_minutes": 120,
+    "prerequisites": ["OR_04_ARSITEKTUR_CPU"]
+  },
+  {
+    "id": "OR_08_IO_INTERFACE",
+    "name": "Input/Output & Interrupts",
+    "description": "Understanding how external devices communicate with the CPU through Polling, Programmed I/O, hardware Interrupts (IRQ), and Direct Memory Access (DMA).",
+    "difficulty": 0.5,
+    "est_minutes": 90,
+    "prerequisites": ["OR_04_ARSITEKTUR_CPU"]
+  }
+]
