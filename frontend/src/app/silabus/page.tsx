@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import {
@@ -74,7 +75,8 @@ export default function SyllabusPathPage() {
   const fetchProgress = async (sid: string) => {
     try {
       setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
+      // supabase may be null if env vars are not configured
+      const session = supabase ? (await supabase.auth.getSession()).data.session : null;
       const res = await fetch((`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/progress`), {
         headers: {
           "Authorization": `Bearer ${session?.access_token || ""}`,
@@ -82,13 +84,13 @@ export default function SyllabusPathPage() {
         },
       });
       if (!res.ok) {
-        throw new Error("Gagal mengambil data kemajuan.");
+        throw new Error("Failed to fetch progress data.");
       }
       const progressJson = await res.json();
       setData(progressJson);
     } catch (err: any) {
       setError(
-        "Gagal menghubungi server backend. Pastikan FastAPI berjalan di port 8000."
+        "Cannot connect to backend. Make sure FastAPI is running on port 8000."
       );
       console.error(err);
     } finally {
@@ -256,89 +258,123 @@ export default function SyllabusPathPage() {
     }
   };
 
+  // ── Stitch-inspired accent palette — rotates per topic ──
+  const TOPIC_ACCENTS = [
+    { color: "#0A8BF8", bg: "rgba(10,139,248,0.12)",  border: "rgba(10,139,248,0.25)",  text: "#0A8BF8"  }, // Electric Blue
+    { color: "#8B5CF6", bg: "rgba(139,92,246,0.12)", border: "rgba(139,92,246,0.25)", text: "#8B5CF6" }, // Violet
+    { color: "#06B6D4", bg: "rgba(6,182,212,0.12)",  border: "rgba(6,182,212,0.25)",  text: "#06B6D4"  }, // Cyan
+    { color: "#10B981", bg: "rgba(16,185,129,0.12)", border: "rgba(16,185,129,0.25)", text: "#10B981" }, // Emerald
+    { color: "#F59E0B", bg: "rgba(245,158,11,0.12)", border: "rgba(245,158,11,0.25)", text: "#F59E0B" }, // Amber
+    { color: "#F43F5E", bg: "rgba(244,63,94,0.12)",  border: "rgba(244,63,94,0.25)",  text: "#F43F5E"  }, // Rose
+  ];
+
+
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-8 animate-[chat-fade-in_0.4s_ease-out]">
+    <div className="relative animate-[chat-fade-in_0.4s_ease-out]">
+      {/* Top page glow */}
+      <div
+        className="fixed top-0 left-0 right-0 h-64 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 50% -20%, rgba(10,139,248,0.06) 0%, transparent 70%)" }}
+      />
+
+      <div className="relative p-6 lg:p-8 max-w-4xl mx-auto space-y-8">
       {/* Header Jalur */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-border/60 pb-6">
-        <div className="space-y-1.5">
-          <span className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5" />
-            Adaptive Learning Path (Multi-User Session)
+        <div className="space-y-2">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-1.5">
+            <Sparkles className="w-3 h-3" />
+            Adaptive Learning Path
           </span>
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+          <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-foreground leading-tight">
             {data.course}
           </h1>
-          <p className="text-sm text-gray-400">
-            Learning Style: <strong className="text-primary">{data.learning_style}</strong> | Session ID: <code className="text-xs text-gray-500">{sessionId.slice(0, 8)}...</code>
-          </p>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
+            <span className="flex items-center gap-1">
+              <Brain className="w-3 h-3 text-primary" />
+              <span className="text-foreground/70">Style:</span>
+              <strong className="text-primary font-medium">{data.learning_style}</strong>
+            </span>
+            <span className="text-border/60">·</span>
+            <span className="flex items-center gap-1">
+              <span className="text-foreground/50">Session:</span>
+              <code className="text-[10px] text-muted font-mono">{sessionId.slice(0, 8)}...</code>
+            </span>
+          </div>
         </div>
 
-        {/* Lingkaran Progress */}
-        <div className="flex items-center gap-4 bg-card/40 border border-border/80 px-5 py-3 rounded-2xl md:shrink-0">
-          <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
-            <svg className="w-full h-full transform -rotate-90">
+        {/* Progress ring card */}
+        <div className="flex items-center gap-5 bg-card/50 border border-border/60 px-7 py-5 rounded-3xl shrink-0 min-w-max shadow-sm">
+          <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="36" stroke="rgba(255,255,255,0.04)" strokeWidth="6" fill="transparent" />
               <circle
-                cx="24"
-                cy="24"
-                r="20"
-                stroke="rgba(255,255,255,0.04)"
-                strokeWidth="4"
-                fill="transparent"
-              />
-              <circle
-                cx="24"
-                cy="24"
-                r="20"
+                cx="40" cy="40" r="36"
                 stroke="rgb(10,139,248)"
-                strokeWidth="4"
+                strokeWidth="6"
                 fill="transparent"
-                strokeDasharray="125.6"
-                strokeDashoffset={125.6 - (125.6 * progressPercent) / 100}
+                strokeDasharray="226.2"
+                strokeDashoffset={226.2 - (226.2 * progressPercent) / 100}
                 strokeLinecap="round"
-                className="transition-all duration-500"
+                className="transition-all duration-700"
               />
             </svg>
-            <span className="absolute text-xs font-bold text-foreground">{progressPercent}%</span>
+            <span className="absolute text-xl font-bold text-foreground">{progressPercent}%</span>
           </div>
-          <div>
-            <p className="text-xs text-gray-500 font-medium">Mastery Level</p>
-            <p className="text-sm font-semibold text-gray-300">
-              {masteredNodes} of {totalNodes} Topics Completed
+          <div className="space-y-1">
+            <p className="text-xs text-muted font-bold uppercase tracking-wider">Overall Progress</p>
+            <p className="text-3xl font-extrabold text-foreground">
+              {masteredNodes} <span className="text-muted font-medium text-lg">/ {totalNodes}</span>
             </p>
+            <p className="text-xs font-medium text-muted">Topics Mastered</p>
           </div>
         </div>
       </div>
 
-      {/* ─── How It Works Info Banner ─── */}
-      <div className="bg-white/[0.02] border border-border/60 rounded-2xl px-5 py-4 flex flex-col sm:flex-row gap-4 text-xs text-gray-400">
-        <div className="flex items-start gap-2 flex-1">
-          <Brain className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold text-gray-200 block mb-0.5">Cognitive Mastery (BKT)</span>
-            Reach <strong className="text-green-400">≥ 80%</strong> mastery to unlock the next topic. Mastery updates automatically after each quiz or answer in Chat AI.
+      {/* ─── How It Works Info Banner (Bento Style) ─── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-gray-400">
+        {/* BKT Card */}
+        <div className="bg-card/40 border border-primary/20 rounded-2xl p-4 flex items-start gap-3 relative overflow-hidden group hover:border-primary/40 transition-colors">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-2xl -translate-y-1/2 translate-x-1/2 rounded-full pointer-events-none" />
+          <div className="p-2 bg-primary/10 rounded-lg shrink-0 group-hover:scale-110 transition-transform">
+            <Brain className="w-4 h-4 text-primary" />
+          </div>
+          <div className="relative z-10">
+            <span className="font-bold text-gray-200 block mb-1">Cognitive Mastery (BKT)</span>
+            <p className="leading-relaxed">Reach <strong className="text-green-400">≥ 80%</strong> mastery to unlock the next topic. Updates automatically via Chat AI.</p>
           </div>
         </div>
-        <div className="w-px bg-border/40 hidden sm:block" />
-        <div className="flex items-start gap-2 flex-1">
-          <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold text-gray-200 block mb-0.5">Remedial Trigger</span>
-            <strong className="text-red-400">2 incorrect answers</strong> in a row on the same topic inserts a Reinforcement Exercise before you can advance.
+        {/* Remedial Card */}
+        <div className="bg-card/40 border border-red-500/20 rounded-2xl p-4 flex items-start gap-3 relative overflow-hidden group hover:border-red-500/40 transition-colors">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/10 blur-2xl -translate-y-1/2 translate-x-1/2 rounded-full pointer-events-none" />
+          <div className="p-2 bg-red-500/10 rounded-lg shrink-0 group-hover:scale-110 transition-transform">
+            <AlertCircle className="w-4 h-4 text-red-400" />
+          </div>
+          <div className="relative z-10">
+            <span className="font-bold text-gray-200 block mb-1">Remedial Trigger</span>
+            <p className="leading-relaxed"><strong className="text-red-400">2 incorrect answers</strong> in a row inserts a Reinforcement Exercise before advancing.</p>
           </div>
         </div>
-        <div className="w-px bg-border/40 hidden sm:block" />
-        <div className="flex items-start gap-2 flex-1">
-          <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold text-gray-200 block mb-0.5">Spaced Repetition (SM-2)</span>
-            Completed topics can be reviewed via <strong className="text-gray-200">Flashcards</strong> — the AI schedules reviews to maintain long-term memory.
+        {/* SM-2 Card */}
+        <div className="bg-card/40 border border-purple-500/20 rounded-2xl p-4 flex items-start gap-3 relative overflow-hidden group hover:border-purple-500/40 transition-colors">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 blur-2xl -translate-y-1/2 translate-x-1/2 rounded-full pointer-events-none" />
+          <div className="p-2 bg-purple-500/10 rounded-lg shrink-0 group-hover:scale-110 transition-transform">
+            <Sparkles className="w-4 h-4 text-purple-400" />
+          </div>
+          <div className="relative z-10">
+            <span className="font-bold text-gray-200 block mb-1">Spaced Repetition</span>
+            <p className="leading-relaxed">Completed topics get scheduled for <strong className="text-gray-200">Flashcard</strong> reviews to maintain long-term memory.</p>
           </div>
         </div>
       </div>
 
       {/* Timeline List */}
       <div className="relative space-y-6">
-        <div className="absolute left-[26px] top-6 bottom-6 w-0.5 bg-border/40 pointer-events-none" />
+        <div className="absolute left-[26px] top-6 bottom-6 w-0.5 bg-border/40 pointer-events-none overflow-hidden rounded-full">
+           <div 
+             className="absolute top-0 w-full bg-gradient-to-b from-primary via-purple-500 to-transparent" 
+             style={{ height: `${Math.max(10, progressPercent + 15)}%`, boxShadow: "0 0 10px rgba(10,139,248,0.5)" }} 
+           />
+        </div>
 
         {syllabus.map((topic, index) => {
           const nodeMastery = mastery[topic.id] ?? 0.0;
@@ -351,33 +387,47 @@ export default function SyllabusPathPage() {
           const isLocked = !isMastered && !isActive && !isPrereqsMet;
           const isAvailable = !isMastered && !isActive && isPrereqsMet;
 
+          // Per-topic accent color (rotates through Stitch palette, skip remedial)
+          const accentIdx = (index) % TOPIC_ACCENTS.length;
+          const accent = TOPIC_ACCENTS[accentIdx];
+
           // Status & Styling
           let borderCls = "border-border/60 bg-card/25";
-          let icon = <Play className="w-4 h-4 text-yellow-400" />;
-          let iconBg = "bg-yellow-500/10 border-yellow-500/20";
+          let icon = <Play className="w-4 h-4" style={{ color: accent.color }} />;
+          let iconBgStyle: React.CSSProperties = { background: accent.bg, borderColor: accent.border };
+          let iconBg = "border";
           let statusText = "";
 
           if (isMastered) {
-            borderCls = "border-green-500/20 bg-green-500/[0.02] hover:border-green-500/35";
-            icon = <CheckCircle2 className="w-5 h-5 text-green-400" />;
-            iconBg = "bg-green-500/10 border-green-500/20";
+            borderCls = "border-green-500/20 bg-green-500/[0.02] hover:border-green-500/35 backdrop-blur-xl";
+            icon = <CheckCircle2 className="w-5 h-5 text-green-400 relative z-10" />;
+            iconBgStyle = { background: "rgba(16,185,129,0.12)", borderColor: "rgba(16,185,129,0.3)" };
             statusText = "COMPLETED";
           } else if (isActive) {
             borderCls = topic.is_remedial
-              ? "border-red-500 bg-red-500/[0.04] shadow-[0_0_20px_rgba(239,68,68,0.1)] animate-[pulse_3s_infinite]"
-              : "border-primary bg-primary/[0.04] shadow-[0_0_20px_rgba(10,139,248,0.08)] animate-[pulse_3.5s_infinite]";
-            icon = <Activity className={`w-5 h-5 ${topic.is_remedial ? "text-red-400" : "text-primary"}`} />;
-            iconBg = topic.is_remedial ? "bg-red-500/10 border-red-500/20" : "bg-primary/10 border-primary/20";
+              ? "border-red-500 bg-red-500/[0.04] shadow-[0_0_20px_rgba(239,68,68,0.15)] backdrop-blur-xl"
+              : `border-[${accent.color}]/50 bg-white/[0.02] shadow-[0_0_24px_${accent.color}33] backdrop-blur-xl`;
+            
+            icon = (
+              <>
+                <Activity className={`w-5 h-5 relative z-10 ${topic.is_remedial ? "text-red-400" : ""}`} style={topic.is_remedial ? {} : { color: accent.color }} />
+                <div className={`absolute inset-0 rounded-full animate-ping opacity-50 ${topic.is_remedial ? "bg-red-400" : ""}`} style={topic.is_remedial ? {} : { backgroundColor: accent.color }} />
+              </>
+            );
+            
+            iconBgStyle = topic.is_remedial
+              ? { background: "rgba(239,68,68,0.12)", borderColor: "rgba(239,68,68,0.3)" }
+              : { background: accent.bg, borderColor: accent.border };
             statusText = topic.is_remedial ? "REMEDIAL & REINFORCEMENT" : "CURRENTLY STUDYING";
           } else if (isLocked) {
             borderCls = "border-white/[0.03] bg-white/[0.01] opacity-45 select-none";
             icon = <Lock className="w-4 h-4 text-gray-500" />;
-            iconBg = "bg-white/[0.02] border-white/[0.05]";
+            iconBgStyle = { background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.06)" };
             statusText = "LOCKED";
           } else if (isAvailable) {
-            borderCls = "border-yellow-500/20 bg-yellow-500/[0.02] hover:border-yellow-500/35";
-            icon = <Play className="w-4 h-4 text-yellow-400" />;
-            iconBg = "bg-yellow-500/10 border-yellow-500/20";
+            borderCls = "border-border/60 bg-card/30 hover:border-border";
+            icon = <Play className="w-4 h-4" style={{ color: accent.color }} />;
+            iconBgStyle = { background: accent.bg, borderColor: accent.border };
             statusText = "READY TO STUDY";
           }
 
@@ -388,18 +438,23 @@ export default function SyllabusPathPage() {
                 isLocked ? "pointer-events-none" : ""
               }`}
             >
+              {/* Timeline dot — accent colored */}
               <div
-                className={`absolute left-2.5 top-3.5 w-[34px] h-[34px] rounded-full border flex items-center justify-center z-10 transition-colors ${iconBg}`}
+                className={`absolute left-2.5 top-4 w-[34px] h-[34px] rounded-xl border-2 flex items-center justify-center z-10 transition-all duration-300 ${iconBg}`}
+                style={iconBgStyle}
               >
                 {icon}
               </div>
 
-              {/* Card Konten */}
-              <div className={`p-6 rounded-2xl border transition-all ${borderCls}`}>
+              {/* Card Content */}
+              <div className={`p-5 rounded-2xl border transition-all duration-300 ${borderCls}`}>
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-2">
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[10px] font-bold text-gray-500 tracking-wider">
+                      <span
+                        className="text-[10px] font-bold tracking-wider"
+                        style={{ color: topic.is_remedial ? "#F43F5E" : accent.color }}
+                      >
                         {topic.is_remedial ? "SPECIAL EXERCISE" : `TOPIC ${index + 1}`}
                       </span>
                       {statusText && (
@@ -479,19 +534,19 @@ export default function SyllabusPathPage() {
                           isMastered ? "text-green-400" : isActive ? "text-primary" : "text-yellow-400"
                         }`}>
                           {Math.round(nodeMastery * 100)}%
-                          <span className="text-gray-600 font-normal text-[10px] ml-1">
+                          <span className="text-muted font-bold text-xs ml-1.5">
                             {isMastered ? "✓ Mastered" : `/ 80% needed`}
                           </span>
                         </span>
                       </div>
                       {/* Bar with 80% threshold marker */}
-                      <div className="relative w-full bg-white/[0.04] rounded-full h-2">
+                      <div className="relative w-full bg-white/[0.04] rounded-full h-3">
                         <div
-                          className={`h-2 rounded-full transition-all duration-500 ${
+                          className={`h-3 rounded-full transition-all duration-500 ${
                             isMastered
                               ? "bg-green-400"
                               : isActive
-                              ? "bg-primary"
+                              ? "bg-primary progress-glow-edge"
                               : "bg-yellow-400"
                           }`}
                           style={{ width: `${Math.min(nodeMastery * 100, 100)}%` }}
@@ -499,11 +554,11 @@ export default function SyllabusPathPage() {
                         {/* 80% threshold marker */}
                         {!isMastered && (
                           <div
-                            className="absolute top-0 bottom-0 w-0.5 bg-green-400/60 rounded"
+                            className="absolute top-0 bottom-0 w-0.5 bg-green-400 shadow-[0_0_8px_#4ade80] rounded z-10"
                             style={{ left: "80%" }}
                             title="Mastery threshold: 80%"
                           >
-                            <span className="absolute -top-5 -translate-x-1/2 text-[9px] text-green-400/70 whitespace-nowrap font-medium">80%</span>
+                            <span className="absolute -top-5 -translate-x-1/2 text-[9px] text-green-400/80 whitespace-nowrap font-bold drop-shadow-[0_0_4px_rgba(74,222,128,0.5)]">80%</span>
                           </div>
                         )}
                       </div>
@@ -550,9 +605,9 @@ export default function SyllabusPathPage() {
                     {isActive && (
                       <Link
                         href="/chat"
-                        className="inline-flex items-center gap-1 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-all shadow-[0_2px_10px_rgba(10,139,248,0.2)]"
+                        className="relative overflow-hidden inline-flex items-center gap-1 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-all shadow-[0_2px_10px_rgba(10,139,248,0.2)] group animate-shimmer"
                       >
-                        Continue Learning <ArrowRight className="w-3.5 h-3.5" />
+                        <span className="relative z-10 flex items-center gap-1">Continue Learning <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" /></span>
                       </Link>
                     )}
                   </div>
@@ -604,7 +659,7 @@ export default function SyllabusPathPage() {
                 {/* 3D Flip Card Container */}
                 <div
                   onClick={() => setIsFlipped((prev) => !prev)}
-                  className="relative h-48 w-full cursor-pointer group"
+                  className="relative h-48 w-full cursor-pointer group [perspective:1000px]"
                 >
                   <div
                     className={`relative w-full h-full text-center transition-transform duration-500 [transform-style:preserve-3d] border border-border/80 rounded-2xl p-6 flex flex-col items-center justify-center bg-white/[0.01] hover:bg-white/[0.02] ${
@@ -712,6 +767,7 @@ export default function SyllabusPathPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

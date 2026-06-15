@@ -372,64 +372,65 @@ def parse_initial_selection(msg_text: str):
 
 # ─── Helper: Membuat System Instruction Gemini ───
 def get_system_instruction(course: str, learning_style: str, current_node: dict, mastery: float, remedial_attempts: int):
-    node_name = current_node.get("name", "Topik Tidak Diketahui")
-    node_desc = current_node.get("description", "Tidak ada deskripsi")
+    node_name = current_node.get("name", "Unknown Topic")
+    node_desc = current_node.get("description", "No description available")
     
     instruction = (
-        "Anda adalah 'Smart AI Tutor', pengajar cerdas, empatik, dan interaktif untuk platform AI Learning Path Universitas Padjadjaran.\n\n"
-        "--- KONTEKS SAAT INI (RAG) ---\n"
-        f"Mata Kuliah: {course}\n"
-        f"Topik yang sedang dipelajari: {node_name}\n"
-        f"Deskripsi Topik: {node_desc}\n"
-        f"Tingkat Penguasaan Siswa: {mastery:.0%} (Target kelulusan topik adalah 80%)\n\n"
+        "You are the 'Smart AI Tutor', an intelligent, empathetic, and interactive instructor for the AI Learning Path platform.\n"
+        "CRITICAL RULE: You MUST communicate exclusively in English at all times, regardless of the language the student uses.\n\n"
+        "--- CURRENT CONTEXT (RAG) ---\n"
+        f"Course: {course}\n"
+        f"Current Topic: {node_name}\n"
+        f"Topic Description: {node_desc}\n"
+        f"Student Mastery Level: {mastery:.0%} (Target mastery to pass is 80%)\n\n"
 
-        "--- TUGAS UTAMA ANDA SEBAGAI TUTOR ---\n"
-        "1. Ajarkan materi di atas secara interaktif. Jangan berikan ceramah panjang! Berikan penjelasan maksimal 2-3 paragraf.\n"
-        "2. Di akhir penjelasan Anda, Anda WAJIB memberikan 1 PERTANYAAN KUIS atau TANTANGAN PRAKTIS untuk menguji pemahaman siswa terkait topik ini.\n"
-        "3. Tunggu siswa menjawab kuis Anda, lalu evaluasi jawaban mereka.\n\n"
+        "--- YOUR MAIN TASKS AS A TUTOR ---\n"
+        "1. Teach the material interactively. Do not give long lectures! Provide explanations in 2-3 paragraphs maximum.\n"
+        "2. At the end of your explanation, you MUST provide 1 QUIZ QUESTION or PRACTICAL CHALLENGE to test the student's understanding of the topic.\n"
+        "3. Wait for the student to answer the quiz, then evaluate their answer.\n\n"
 
-        "--- ETIKA & SMART AI GUARDRAILS ---\n"
-        "1. JANGAN PERNAH memberikan jawaban koding mentah atau solusi akhir. Biarkan siswa berpikir mandiri.\n"
-        "2. Jika siswa meminta jawaban langsung, berikan *hint*, *pseudocode*, atau bimbingan langkah demi langkah.\n\n"
+        "--- ETHICS & SMART AI GUARDRAILS ---\n"
+        "1. NEVER provide raw code answers or final solutions. Let the student think independently.\n"
+        "2. If the student asks for a direct answer, provide a *hint*, *pseudocode*, or step-by-step guidance.\n\n"
     )
 
     if learning_style == "Visual":
         instruction += (
-            "--- GAYA BELAJAR: VISUAL & INTERAKTIF ---\n"
-            "- Gunakan representasi visual seperti flowchart teks, tabel markdown, atau diagram ASCII untuk menjelaskan konsep.\n"
-            "- Buat visualisasi memori, sirkuit, atau relasi tabel secara kreatif (contoh: [Node A] -> [Node B]).\n\n"
+            "--- LEARNING STYLE: VISUAL & INTERACTIVE ---\n"
+            "- Use visual representations such as text flowcharts, markdown tables, or ASCII diagrams to explain concepts.\n"
+            "- Create creative visualizations of memory, circuits, or table relations (e.g., [Node A] -> [Node B]).\n\n"
         )
     elif learning_style == "Auditorial":
         instruction += (
-            "--- GAYA BELAJAR: AUDITORIAL & DISKUSI ---\n"
-            "- Gunakan nada percakapan yang sangat interaktif, seolah Anda berbicara langsung.\n"
-            "- Gunakan analogi dunia nyata untuk menjelaskan konsep abstrak.\n\n"
+            "--- LEARNING STYLE: AUDITORY & DISCUSSION ---\n"
+            "- Use a highly interactive conversational tone, as if you are speaking directly to them.\n"
+            "- Use real-world analogies to explain abstract concepts.\n\n"
         )
     elif learning_style == "Praktikal":
         instruction += (
-            "--- GAYA BELAJAR: PRAKTIKAL & KODING ---\n"
-            "- Fokuskan penjelasan pada penerapan dunia nyata (best practices).\n"
-            "- Berikan potongan kode yang belum selesai (fill-in-the-blanks) atau minta mereka mencari *bug* dalam kode.\n\n"
+            "--- LEARNING STYLE: PRACTICAL & CODING ---\n"
+            "- Focus your explanation on real-world applications and best practices.\n"
+            "- Provide incomplete code snippets (fill-in-the-blanks) or ask them to find a *bug* in the code.\n\n"
         )
 
     if remedial_attempts >= 2:
         instruction += (
-            "--- INTERVENSI REMEDIAL AKTIF ---\n"
-            "Siswa ini telah gagal menjawab kuis lebih dari 2 kali berturut-turut pada topik ini.\n"
-            "- Sederhanakan bahasa Anda dan turunkan tingkat kesulitan pertanyaan kuis.\n"
-            "- Berikan analogi yang paling dasar dan motivasi ekstra agar mereka tidak menyerah.\n\n"
+            "--- ACTIVE REMEDIAL INTERVENTION ---\n"
+            "This student has failed the quiz more than 2 consecutive times on this topic.\n"
+            "- Simplify your language and lower the difficulty of the quiz question.\n"
+            "- Provide the most basic analogies and extra motivation so they don't give up.\n\n"
         )
 
     instruction += (
-        "--- EVALUASI KOGNITIF & BKT UPDATE (SANGAT KRITIS!) ---\n"
-        "Sistem bergantung pada Anda untuk melacak penguasaan siswa agar silabus bisa maju ke bab berikutnya. Di bagian PALING AKHIR dari setiap respons Anda, Anda WAJIB menyisipkan persis SATU dari tag rahasia berikut di baris baru:\n\n"
-        "- Jika siswa BARU SAJA MENJAWAB kuis/tantangan Anda dengan BENAR (memahami konsep):\n"
-        "  Gunakan tag: `[BKT_UPDATE: CORRECT]`\n\n"
-        "- Jika siswa MENCOBA MENJAWAB kuis namun SALAH (atau masih belum paham konsep utama):\n"
-        "  Gunakan tag: `[BKT_UPDATE: INCORRECT]`\n\n"
-        "- Jika interaksi saat ini HANYA BERUPA penjelasan, pertanyaan umum, atau Anda baru saja memberikan soal (siswa belum menjawab):\n"
-        "  Gunakan tag: `[STATUS: LEARNING]`\n\n"
-        "PERINGATAN: Jangan lupakan tag ini di kalimat terakhir respons Anda, dan pastikan ejaannya persis (menggunakan kurung siku besar)."
+        "--- COGNITIVE EVALUATION & BKT UPDATE (EXTREMELY CRITICAL!) ---\n"
+        "The system relies on you to track the student's mastery so the syllabus can progress. At the VERY END of every response, you MUST append exactly ONE of the following secret tags on a new line:\n\n"
+        "- If the student JUST ANSWERED your quiz/challenge CORRECTLY (understands the concept):\n"
+        "  Use tag: `[BKT_UPDATE: CORRECT]`\n\n"
+        "- If the student ATTEMPTED the quiz but was INCORRECT (or still doesn't grasp the core concept):\n"
+        "  Use tag: `[BKT_UPDATE: INCORRECT]`\n\n"
+        "- If the current interaction is JUST an explanation, a general question, or you just asked a question (and the student hasn't answered yet):\n"
+        "  Use tag: `[STATUS: LEARNING]`\n\n"
+        "WARNING: Do not forget this tag at the last line of your response, and ensure exact spelling (using square brackets)."
     )
     return instruction
 
@@ -643,6 +644,55 @@ def get_progress(request: Request, current_user: dict = Depends(get_current_user
         "syllabus": session.syllabus
     }
 
+# ─── Endpoint: List Semua Sesi Pengguna (Cross-Device Sync) ───
+@app.get("/api/sessions")
+def get_all_sessions(current_user: dict = Depends(get_current_user)):
+    user_id = current_user["user_id"]
+    if not supabase_client:
+        return {"sessions": []}
+        
+    try:
+        response = supabase_client.table("user_sessions")\
+            .select("session_id, chat_history, updated_at")\
+            .eq("user_id", user_id)\
+            .order("updated_at", desc=True)\
+            .execute()
+        
+        sessions = []
+        for row in response.data:
+            chat_history = row.get("chat_history", [])
+            
+            # Extract title from first user message
+            title = ""
+            for msg in chat_history:
+                if msg.get("role") == "user":
+                    content = msg.get("content", "")
+                    title = content[:40] if content else "Attachment"
+                    break
+            
+            # Konversi updated_at (ISO) ke ms timestamp untuk frontend
+            updated_str = row.get("updated_at")
+            updated_ms = int(time.time() * 1000)
+            if updated_str:
+                try:
+                    from datetime import datetime
+                    dt = datetime.fromisoformat(updated_str.replace("Z", "+00:00"))
+                    updated_ms = int(dt.timestamp() * 1000)
+                except Exception:
+                    pass
+
+            sessions.append({
+                "id": row.get("session_id"),
+                "title": title,
+                "messages": chat_history,
+                "updatedAt": updated_ms
+            })
+            
+        return {"sessions": sessions}
+    except Exception as e:
+        print(f"[Supabase Error] List sessions failed: {e}")
+        return {"sessions": []}
+
 # ─── Endpoint: Ambil Flashcards per Topik ───
 @app.get("/api/flashcards")
 def get_topic_flashcards(topic_id: str):
@@ -791,7 +841,7 @@ async def chat_with_ai(
                 )
                 chat_history.append({"role": "user", "content": user_message})
                 chat_history.append({"role": "bot", "content": reply})
-                save_session_to_disk(session_id)
+                save_session_to_db(user_id, session_id)
                 return _build_response(reply, file_url, file_name, file_size, file_type)
             else:
                 session.course = None
@@ -831,7 +881,7 @@ async def chat_with_ai(
                 "*   **C. Practical & Coding-Focused**: Uses code snippets, hands-on exercises, and pseudocode.\n\n"
                 "*Reply with **A**, **B**, or **C**.*"
             )
-        save_session_to_disk(session_id)
+        save_session_to_db(user_id, session_id)
         return _build_response(reply, file_url, file_name, file_size, file_type)
 
     # 5. Percakapan Utama dengan Gemini API

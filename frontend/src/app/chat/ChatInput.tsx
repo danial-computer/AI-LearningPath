@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type KeyboardEvent } from "react";
+import { useRef, useEffect, type KeyboardEvent } from "react";
 import { Send, Paperclip, X, FileText } from "lucide-react";
 
 function formatFileSize(bytes: number): string {
@@ -28,12 +28,31 @@ export default function ChatInput({
 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageUrlRef = useRef<string | null>(null);
+
+  // ── Fix: revoke object URL to prevent memory leak ──
+  useEffect(() => {
+    if (file?.type.startsWith("image/")) {
+      const url = URL.createObjectURL(file);
+      imageUrlRef.current = url;
+      return () => URL.revokeObjectURL(url);
+    } else {
+      imageUrlRef.current = null;
+    }
+  }, [file]);
+
+  // ── Auto-focus when re-enabled ──
+  useEffect(() => {
+    if (!disabled && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [disabled]);
 
   const adjustHeight = () => {
     const textarea = textareaRef.current;
     if (!textarea) return;
     textarea.style.height = "auto";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 150)}px`;
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 140)}px`;
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -41,9 +60,7 @@ export default function ChatInput({
       e.preventDefault();
       if (!disabled && (value.trim() || file)) {
         onSend();
-        if (textareaRef.current) {
-          textareaRef.current.style.height = "auto";
-        }
+        if (textareaRef.current) textareaRef.current.style.height = "auto";
       }
     }
   };
@@ -51,104 +68,107 @@ export default function ChatInput({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0] ?? null;
     onFileChange(selected);
-    // Reset input so same file can be re-selected
     e.target.value = "";
   };
 
   const isImageFile = file?.type.startsWith("image/");
+  const canSend = !disabled && (value.trim().length > 0 || !!file);
 
   return (
-    <div className="p-6 bg-background border-t border-border">
-      <div className="max-w-4xl mx-auto">
+    <div className="px-4 pb-4 pt-2 flex justify-center w-full" style={{ background: "#1C1C1E" }}>
+      <div className="w-full max-w-4xl">
         {/* File Preview */}
-        {file && (
-          <div className="mb-3 flex items-center gap-3 p-3 bg-card border border-border rounded-xl animate-[chat-fade-in_0.2s_ease-out]">
-            {isImageFile ? (
-              <img
-                src={URL.createObjectURL(file)}
-                alt={file.name}
-                className="w-10 h-10 rounded-lg object-cover border border-border"
-              />
-            ) : (
-              <div className="p-2 bg-primary/10 rounded-lg shrink-0">
-                <FileText className="w-5 h-5 text-primary" />
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
-                {file.name}
-              </p>
-              <p className="text-[11px] text-gray-500">
-                {formatFileSize(file.size)}
-              </p>
+      {file && (
+        <div className="mb-2 mx-1 flex items-center gap-3 p-2.5 bg-card border border-border/60 rounded-2xl animate-[chat-fade-in_0.2s_ease-out]">
+          {isImageFile && imageUrlRef.current ? (
+            <img
+              src={imageUrlRef.current}
+              alt={file.name}
+              className="w-9 h-9 rounded-xl object-cover border border-border/60"
+            />
+          ) : (
+            <div className="p-2 bg-primary/10 rounded-xl shrink-0">
+              <FileText className="w-4 h-4 text-primary" />
             </div>
-            <button
-              onClick={() => onFileChange(null)}
-              className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-              title="Remove file"
-            >
-              <X className="w-4 h-4" />
-            </button>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-foreground truncate">{file.name}</p>
+            <p className="text-[10px] text-muted mt-0.5">{formatFileSize(file.size)}</p>
           </div>
-        )}
-
-        {/* Input row */}
-        <div className="flex gap-3 items-end">
-          {/* Paperclip button */}
           <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={disabled}
-            className="p-4 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-            title="Attach file"
+            onClick={() => onFileChange(null)}
+            className="p-1.5 text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+            title="Remove file"
           >
-            <Paperclip className="w-5 h-5" />
+            <X className="w-3.5 h-3.5" />
           </button>
+        </div>
+      )}
 
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
+      {/* Unified input container */}
+      <div className={`flex items-end gap-0 rounded-2xl border transition-all duration-200 bg-card ${
+        disabled ? "opacity-60" : "border-border/60 focus-within:border-primary/40 focus-within:shadow-[0_0_0_1px_rgba(10,139,248,0.15)]"
+      }`}>
+        {/* Paperclip — inside container left */}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled}
+          className="p-3.5 text-muted hover:text-primary transition-colors disabled:cursor-not-allowed shrink-0 self-end mb-0.5"
+          title="Attach file"
+        >
+          <Paperclip className="w-[18px] h-[18px]" />
+        </button>
 
-          {/* Textarea */}
-          <textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => {
-              onChange(e.target.value);
-              adjustHeight();
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask about a topic or request a practice quiz..."
-            rows={1}
-            className="flex-1 bg-card border border-border rounded-xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder-gray-500 resize-none overflow-y-auto leading-relaxed"
-            style={{ maxHeight: "150px" }}
-          />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.pdf,.txt,.py,.js,.ts,.html,.css,.md,.csv,.json,.xml,.ipynb"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
 
-          {/* Send button */}
+        {/* Textarea */}
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+            adjustHeight();
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder="Ask about a topic or request a practice quiz..."
+          rows={1}
+          disabled={disabled}
+          className="flex-1 bg-transparent py-3.5 pr-2 text-sm text-foreground placeholder-muted resize-none overflow-y-auto leading-relaxed focus:outline-none"
+          style={{ maxHeight: "140px" }}
+        />
+
+        {/* Send button — inside container right */}
+        <div className="p-2 self-end mb-1 shrink-0">
           <button
             type="button"
             onClick={() => {
-              if (!disabled && (value.trim() || file)) {
+              if (canSend) {
                 onSend();
-                if (textareaRef.current) {
-                  textareaRef.current.style.height = "auto";
-                }
+                if (textareaRef.current) textareaRef.current.style.height = "auto";
               }
             }}
-            disabled={disabled || (!value.trim() && !file)}
-            className="bg-primary hover:bg-primary-dark text-white p-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shrink-0"
+            disabled={!canSend}
+            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 ${
+              canSend
+                ? "bg-gradient-to-br from-primary to-blue-600 hover:opacity-90 text-white shadow-[0_2px_8px_rgba(10,139,248,0.35)] scale-100"
+                : "bg-white/5 text-muted cursor-not-allowed scale-95"
+            }`}
           >
-            <Send className="w-5 h-5" />
+            <Send className="w-3.5 h-3.5" />
           </button>
         </div>
+      </div>
 
-        <p className="text-center text-[11px] text-gray-600 mt-2">
-          Press Enter to send · Shift+Enter for new line · 📎 to attach a file
-        </p>
+      <p className="text-center text-[10px] text-muted mt-2">
+        Enter to send · Shift+Enter for new line · 📎 to attach a file
+      </p>
       </div>
     </div>
   );

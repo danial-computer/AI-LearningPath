@@ -75,8 +75,13 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   // If on login or update-password, render content directly without sidebar
   if (isPublicPage) {
-    return <>{children}</>;
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center" style={{ background: "#1C1C1E" }}>
+        {children}
+      </div>
+    );
   }
+
 
   return (
     <>
