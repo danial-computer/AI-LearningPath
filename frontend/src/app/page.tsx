@@ -545,7 +545,7 @@ export default function Dashboard() {
         </div>
 
         {/* Status Dropout / Peringatan Dini */}
-        <div className={`bg-card p-5 rounded-2xl border transition-all ${metrics.earlyWarning.bgBorder}`}>
+        <div className={`bg-card p-5 rounded-2xl border border-border group transition-colors ${metrics.earlyWarning.bgBorder}`}>
           <div className="flex items-center gap-2 mb-4">
             <div className="p-2 bg-white/5 rounded-lg">
               <WarningIcon className={`w-4 h-4 ${metrics.earlyWarning.color}`} />

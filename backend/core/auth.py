@@ -31,6 +31,9 @@ def get_jwks_client():
         print(f"[Auth Warning] Failed to initialize PyJWKClient: {e}. Fallback to secret key validation.")
         return None
 
+DEV_USER = {"user_id": "dev_user", "email": "dev@localhost"}
+
+
 def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)) -> dict:
     if not credentials:
         print("[Auth Error] Credentials missing in request headers")
@@ -143,4 +146,3 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Security(securi
     except jwt.InvalidTokenError as e:
         print(f"[Auth Error] Invalid token validation failed: {e}")
         raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
-

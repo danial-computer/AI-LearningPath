@@ -120,8 +120,41 @@ export default function SidebarClient() {
     }
   };
 
+  // ─── Fetch from Cloud (Cross-device sync) ───
+  const fetchSessionsFromCloud = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/sessions`, {
+        headers: { "Authorization": `Bearer ${session.access_token}` }
+      });
+      
+      if (res.ok) {
+        const json = await res.json();
+        if (json.sessions && Array.isArray(json.sessions) && json.sessions.length > 0) {
+          setConversations(json.sessions);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(json.sessions));
+          
+          const activeIdStored = localStorage.getItem(ACTIVE_KEY);
+          const stillExists = json.sessions.find((s: Conversation) => s.id === activeIdStored);
+          
+          if (!stillExists) {
+            const newActive = json.sessions[0].id;
+            setActiveId(newActive);
+            localStorage.setItem(ACTIVE_KEY, newActive);
+            window.dispatchEvent(new CustomEvent("switch-conversation", { detail: newActive }));
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[Sync] Failed to fetch sessions from cloud:", err);
+    }
+  };
+
   useEffect(() => {
     loadConversations();
+    fetchSessionsFromCloud();
 
     // Listen for changes from chat page
     const handleStorage = (e: StorageEvent) => {
@@ -205,9 +238,9 @@ export default function SidebarClient() {
     <aside className="w-64 bg-sidebar border-r border-border flex flex-col relative z-20">
       {/* Logo */}
       <div className="p-6 border-b border-border">
-        <h1 className="text-xl font-bold text-primary flex items-center gap-2">
-          <BookOpen className="w-6 h-6" />
-          AI Learning
+        <h1 className="text-xl font-bold text-primary flex items-center gap-2.5 tracking-tight">
+          <BookOpen className="w-6 h-6 -mt-0.5 shrink-0" />
+          SAI Learning
         </h1>
       </div>
 
@@ -215,40 +248,46 @@ export default function SidebarClient() {
       <nav className="flex-1 p-4 space-y-2">
         <Link
           href="/"
-          className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-border transition-colors ${
-            pathname === "/" ? "bg-border text-foreground" : "text-foreground"
+          className={`group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-r-lg border-l-2 transition-all ${
+            pathname === "/" ? "bg-primary/[0.04] border-primary text-primary shadow-[inset_4px_0_10px_-4px_rgba(10,139,248,0.3)]" : "border-transparent text-foreground hover:bg-white/[0.02]"
           }`}
         >
-          <LayoutDashboard className="w-5 h-5 text-gray-400" />
-          Dashboard
+          <LayoutDashboard className={`w-5 h-5 transition-transform group-hover:translate-x-1 ${pathname === "/" ? "text-primary" : "text-gray-400"}`} />
+          <span className="transition-transform group-hover:translate-x-1">Dashboard</span>
         </Link>
 
         {/* Jalur Silabus — now above Chat AI */}
         <Link
           href="/silabus"
-          className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-border transition-colors ${
-            pathname === "/silabus"
-              ? "bg-border text-foreground"
-              : "text-foreground"
+          className={`group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-r-lg border-l-2 transition-all ${
+            pathname === "/silabus" ? "bg-primary/[0.04] border-primary text-primary shadow-[inset_4px_0_10px_-4px_rgba(10,139,248,0.3)]" : "border-transparent text-foreground hover:bg-white/[0.02]"
           }`}
         >
-          <BookOpen className="w-5 h-5 text-gray-400" />
-          Learning Path
+          <BookOpen className={`w-5 h-5 transition-transform group-hover:translate-x-1 ${pathname === "/silabus" ? "text-primary" : "text-gray-400"}`} />
+          <span className="transition-transform group-hover:translate-x-1">Learning Path</span>
         </Link>
 
         {/* Chat AI — with dropdown history */}
-        <div className="relative" ref={popupRef}>
+        <div 
+          className="relative group/chat" 
+          ref={popupRef}
+          onMouseEnter={() => {
+            loadConversations();
+            setHistoryOpen(true);
+          }}
+          onMouseLeave={() => setHistoryOpen(false)}
+        >
           <div
-            className={`flex items-center rounded-lg transition-colors ${
-              isChatActive ? "bg-border" : ""
+            className={`flex items-center rounded-r-lg border-l-2 transition-all ${
+              isChatActive ? "bg-primary/[0.04] border-primary text-primary shadow-[inset_4px_0_10px_-4px_rgba(10,139,248,0.3)]" : "border-transparent text-foreground hover:bg-white/[0.02]"
             }`}
           >
             <Link
               href="/chat"
-              className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground flex-1 hover:bg-border rounded-lg transition-colors"
+              className="flex items-center gap-3 px-4 py-3 text-sm font-medium flex-1 rounded-lg transition-all"
             >
-              <MessageSquare className="w-5 h-5 text-gray-400" />
-              Chat AI
+              <MessageSquare className={`w-5 h-5 transition-transform group-hover/chat:translate-x-1 ${isChatActive ? "text-primary" : "text-gray-400"}`} />
+              <span className="transition-transform group-hover/chat:translate-x-1">Chat AI</span>
             </Link>
             {/* Chevron toggle — rotates when open */}
             <button
@@ -256,7 +295,7 @@ export default function SidebarClient() {
                 loadConversations();
                 setHistoryOpen((prev) => !prev);
               }}
-              className="p-2 mr-1 text-gray-400 hover:text-foreground hover:bg-border/60 rounded-lg transition-all"
+              className={`p-2 mr-1 rounded-lg transition-all ${isChatActive ? "text-primary hover:bg-primary/10" : "text-gray-400 hover:text-foreground hover:bg-border/60"}`}
               title="View chat history"
             >
               <ChevronDown

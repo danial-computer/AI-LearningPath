@@ -81,13 +81,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-background px-4 overflow-hidden select-none">
-      {/* Decorative Blur Blobs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 animate-pulse pointer-events-none" />
+    <div className="relative w-full h-full flex items-center justify-center px-4 select-none">
+      {/* Full-screen decorative blobs */}
+      <div className="fixed top-0 left-0 w-[600px] h-[600px] bg-primary/8 rounded-full blur-[120px] -translate-x-1/3 -translate-y-1/3 pointer-events-none" />
+      <div className="fixed bottom-0 right-0 w-[500px] h-[500px] bg-blue-600/8 rounded-full blur-[100px] translate-x-1/3 translate-y-1/3 pointer-events-none" />
 
       {/* Auth Card */}
-      <div className="relative w-full max-w-md bg-card/40 backdrop-blur-xl border border-border/80 p-8 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
+      <div className="relative w-full max-w-md bg-card/60 border border-border/60 p-8 rounded-2xl shadow-2xl shadow-black/60">
         
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-8 text-center">
