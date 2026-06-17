@@ -64,16 +64,13 @@ export default function ChatPage() {
     const savedActiveId = localStorage.getItem(ACTIVE_KEY);
 
     if (loaded.length > 0) {
-      // Find if there's already an empty chat to avoid spamming new ones
-      const emptyChat = loaded.find((c) => c.messages.length === 0);
-      if (emptyChat) {
-        setConversations(loaded);
-        setActiveId(emptyChat.id);
-      } else {
-        const newConv = createNewConversation();
-        setConversations([newConv, ...loaded]);
-        setActiveId(newConv.id);
-      }
+      setConversations(loaded);
+      // Restore the last active conversation (preserves learning path session)
+      const resolvedId =
+        savedActiveId && loaded.find((c) => c.id === savedActiveId)
+          ? savedActiveId
+          : loaded[0].id;
+      setActiveId(resolvedId);
     } else {
       const first = createNewConversation();
       setConversations([first]);
