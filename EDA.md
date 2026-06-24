@@ -1,288 +1,257 @@
-# 🎓 Exploratory Data Analysis Proyek AI Learning Path Chatbot
-**Reasoning & Planning dalam AI**
+# 🎓 Exploratory Data Analysis: AI Learning Path Chatbot Project
+**Reasoning & Planning in AI**
 
 ---
 
-## 1. Status Progress Keseluruhan Proyek
+## 1. Overall Project Progress Status
 
-| No | Notebook | Status | Deskripsi |
+| No | Notebook / Deliverable | Status | Description |
 | :---: | :--- | :---: | :--- |
-| 1 | [01_eda_comprehensive.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/01_eda_comprehensive.ipynb) | ✅ Selesai | EDA komprehensif 7 dataset OULAD (62 cells, 114KB) |
-| 2 | [02_knowledge_graph_path.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/02_knowledge_graph_path.ipynb) | ✅ Selesai | Knowledge Graph (DAG) + Topological Sort + Path Generator |
-| 3 | [03_knowledge_tracing.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/03_knowledge_tracing.ipynb) | ✅ Selesai | Bayesian Knowledge Tracing (pyBKT) + 5-Fold CV |
-| 4 | [04_spaced_repetition_pipeline.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/04_spaced_repetition_pipeline.ipynb) | ✅ Selesai | FSRS Scheduler + CLI Chatbot Simulator + Ethical Guardrails |
-| 5 | Silabus Praktikum (3 JSON) | ✅ Selesai | DAG kurikulum untuk Orarkom, Database I, Struktur Data |
-| 6 | Backend (FastAPI) | ✅ Selesai | REST API `/api/chat`, `/api/recommend`, `/api/submit-quiz` |
-| 7 | Frontend (Next.js Web UI) | ✅ Selesai | Chat interface + Progress Tree + Tooltip Cards |
+| 1 | [01_eda_comprehensive.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/project%20AI/AI-LearningPath/notebook/01_eda_comprehensive.ipynb) | ✅ Completed | Comprehensive EDA of the 7 OULAD datasets (62 cells, 114KB) |
+| 2 | [02_knowledge_graph_path.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/project%20AI/AI-LearningPath/notebook/ai_learningpath.ipynb) | ✅ Completed | Knowledge Graph (DAG) + Topological Sort + Path Generator |
+| 3 | [03_knowledge_tracing.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/project%20AI/AI-LearningPath/notebook/ai_learningpath.ipynb) | ✅ Completed | Bayesian Knowledge Tracing (pyBKT) + 5-Fold CV |
+| 4 | [04_spaced_repetition_pipeline.ipynb](file:///c:/Users/ratuc/OneDrive/Documents/project%20AI/AI-LearningPath/notebook/ai_learningpath.ipynb) | ✅ Completed | FSRS Scheduler + CLI Chatbot Simulator + Ethical Guardrails |
+| 5 | Lab Syllabus (3 JSON files) | ✅ Completed | Curriculum DAGs for Computer Org, Database I, and Data Structures |
+| 6 | Backend (FastAPI) | ✅ Completed | REST API endpoints (`/api/chat`, `/api/progress`, `/api/flashcard/review`) |
+| 7 | Frontend (Next.js Web UI) | ✅ Completed | Chat interface + Syllabus Progress Tree + Dashboard stats |
 
-### Berkas Pendukung
+### Supporting Files
 
-| Berkas | Lokasi |
+| File | Location |
 | :--- | :--- |
-| Silabus Orarkom | [praktikum_orarkom.json](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/silabus/praktikum_orarkom.json) (8 topik) |
-| Silabus Database I | [praktikum_database.json](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/silabus/praktikum_database.json) (10 topik) |
-| Silabus Struktur Data | [praktikum_strukdat.json](file:///c:/Users/ratuc/OneDrive/Documents/ai-learningPath/silabus/praktikum_strukdat.json) (9 topik) |
-| Kajian Etika | [ethical_impact_assessment.md](file:///C:/Users/ratuc/.gemini/antigravity/brain/298f32d8-e569-4ad9-ab29-20f19a5d0214/ethical_impact_assessment.md) |
+| Computer Org Syllabus | [praktikum_orarkom.json](file:///c:/Users/ratuc/OneDrive/Documents/project%20AI/AI-LearningPath/silabus/praktikum_orarkom.json) (8 topics) |
+| Database I Syllabus | [praktikum_database.json](file:///c:/Users/ratuc/OneDrive/Documents/project%20AI/AI-LearningPath/silabus/praktikum_database.json) (10 topics) |
+| Data Structures Syllabus | [praktikum_strukdat.json](file:///c:/Users/ratuc/OneDrive/Documents/project%20AI/AI-LearningPath/silabus/praktikum_strukdat.json) (9 topics) |
+| Ethical Studies | [ethical_impact_assessment.md](file:///C:/Users/ratuc/.gemini/antigravity/brain/298f32d8-e569-4ad9-ab29-20f19a5d0214/ethical_impact_assessment.md) |
 
 ---
 
-## 2. Apa itu EDA dan Mengapa Dilakukan?
+## 2. What is EDA and Why is it Done?
 
-**EDA (Exploratory Data Analysis)** atau **Analisis Data Eksploratif** adalah proses awal dalam siklus Data Science di mana kita:
-1. **Memahami struktur dan karakteristik data** sebelum membangun model apapun.
-2. **Mengidentifikasi anomali** (missing values, outlier, duplikat) yang bisa merusak model.
-3. **Menemukan pola dan hubungan** antar variabel yang menginformasikan desain algoritma.
-4. **Mendeteksi bias dan ketimpangan** dalam data untuk memastikan keadilan sistem AI.
+**EDA (Exploratory Data Analysis)** is the initial step in the Data Science lifecycle where we:
+1. **Understand the structure and characteristics of the data** before building any predictive models.
+2. **Identify anomalies** (missing values, outliers, duplicate rows) that could compromise model training.
+3. **Discover patterns and relationships** between variables that inform algorithmic design.
+4. **Detect biases and inequities** in the dataset to ensure fairness in downstream AI decisions.
 
-### Mengapa EDA Krusial untuk Proyek Ini?
+### Why is EDA Crucial for This Project?
 
-Dalam konteks AI Learning Path Chatbot, EDA menjawab pertanyaan-pertanyaan fundamental:
+In the context of the AI Learning Path Chatbot, EDA provides answers to fundamental system design questions:
 
-| Pertanyaan | Dijawab oleh Section |
+| Question | Answered by |
 | :--- | :--- |
-| Seberapa bersih data OULAD? Adakah missing values yang harus ditangani? | **Section 2** (Analisis Kualitas Data) |
-| Bagaimana profil demografi mahasiswa? Apakah ada kelompok dominan? | **Section 3** (Analisis Univariat) |
-| Apakah faktor sosial-ekonomi memengaruhi keberhasilan belajar? | **Section 4** (Analisis Bivariat) |
-| Kapan mahasiswa cenderung berhenti (dropout)? Bisakah kita deteksi lebih awal? | **Section 5** (Analisis Perjalanan Mahasiswa) |
-| Tipe materi VLE mana yang paling efektif untuk pembelajaran? | **Section 6** (Deep Dive VLE) |
-| Apakah data kita mengandung diskriminasi algoritmik? | **Section 7** (Analisis Bias & Kesetaraan) |
-| Fitur mana yang paling berkorelasi dengan keberhasilan untuk di-feed ke model? | **Section 8** (Rekayasa Fitur) |
+| How clean is the OULAD data? Are there missing values we must impute? | **Section 2** (Data Quality Analysis) |
+| What is the demographic profile of the students? Are there highly dominant classes? | **Section 3** (Univariate Analysis) |
+| Do socioeconomic factors affect learning success? | **Section 4** (Bivariate Analysis) |
+| When do students tend to dropout? Can we detect it early enough to intervene? | **Section 5** (Student Journey Analysis) |
+| Which Virtual Learning Environment (VLE) activities show the highest student engagement? | **Section 6** (VLE Deep Dive) |
+| Does our training data contain structural bias? | **Section 7** (Bias & Equity Audit) |
+| Which features are most predictive of student performance for model training? | **Section 8** (Feature Engineering) |
 
 ---
 
-## 3. Dataset OULAD — Penjelasan Lengkap
+## 3. The OULAD Dataset — Full Explanation
 
-**OULAD** = **Open University Learning Analytics Dataset**, sebuah dataset publik dari The Open University (UK) yang mencatat aktivitas belajar ~32.000 mahasiswa di 7 modul kursus selama 4 semester.
+**OULAD** (**Open University Learning Analytics Dataset**) is a public educational dataset released by The Open University (UK). It tracks the learning activities of ~32,000 students enrolled across 7 course modules over 4 semesters.
 
-Dataset ini terdiri dari **7 file CSV** yang saling terhubung melalui relasi kunci (*foreign key*):
+The dataset consists of **7 CSV files** connected via foreign keys:
 
 ```mermaid
 erDiagram
-    COURSES ||--o{ ASSESSMENTS : "memiliki"
-    COURSES ||--o{ VLE : "memiliki"
-    COURSES ||--o{ STUDENT_INFO : "mendaftarkan"
-    STUDENT_INFO ||--o{ STUDENT_ASSESSMENT : "mengerjakan"
-    STUDENT_INFO ||--o{ STUDENT_REGISTRATION : "mendaftar di"
-    STUDENT_INFO ||--o{ STUDENT_VLE : "berinteraksi dengan"
-    ASSESSMENTS ||--o{ STUDENT_ASSESSMENT : "dinilai oleh"
-    VLE ||--o{ STUDENT_VLE : "diakses oleh"
+    COURSES ||--o{ ASSESSMENTS : "contains"
+    COURSES ||--o{ VLE : "contains"
+    COURSES ||--o{ STUDENT_INFO : "registers"
+    STUDENT_INFO ||--o{ STUDENT_ASSESSMENT : "submits"
+    STUDENT_INFO ||--o{ STUDENT_REGISTRATION : "enrolls in"
+    STUDENT_INFO ||--o{ STUDENT_VLE : "interacts with"
+    ASSESSMENTS ||--o{ STUDENT_ASSESSMENT : "grades"
+    VLE ||--o{ STUDENT_VLE : "is accessed by"
 ```
 
 ---
 
-### 3.1 `courses.csv` — Informasi Modul & Presentasi
-**Jumlah baris:** 22 | **Jumlah kolom:** 3
+### 3.1 `courses.csv` — Module & Presentation Info
+**Row count:** 22 | **Column count:** 3
 
-Berisi metadata tentang modul kursus dan kapan modul tersebut diajarkan (presentasi/semester).
+Contains metadata about course modules and the semesters (presentations) they were offered.
 
-| Kolom | Tipe | Deskripsi Lengkap |
+| Column | Type | Description |
 | :--- | :---: | :--- |
-| `code_module` | `object` | **Kode modul kursus.** Terdapat 7 modul unik yang dianonimkan: **AAA, BBB, CCC, DDD, EEE, FFF, GGG**. Setiap modul mewakili satu mata kuliah berbeda di Open University. |
-| `code_presentation` | `object` | **Kode presentasi (semester).** Format: `YYYY[B/J]` — contoh `2013J` berarti semester Februari 2013, `2014B` berarti semester Oktober 2014. **B = Oktober (musim gugur), J = Februari (musim semi).** Terdapat 4 semester: 2013B, 2013J, 2014B, 2014J. |
-| `module_presentation_length` | `int64` | **Durasi modul dalam hari.** Lama waktu modul berlangsung sejak hari mulai hingga hari akhir. Biasanya berkisar antara **234–269 hari** (~8-9 bulan). |
+| `code_module` | `object` | **Course module code.** Represents one of 7 unique anonymized courses: **AAA, BBB, CCC, DDD, EEE, FFF, GGG**. |
+| `code_presentation` | `object` | **Presentation (semester) code.** Format: `YYYY[B/J]`. `2013J` represents the Spring semester starting in February 2013, and `2014B` represents the Autumn semester starting in October. **B = October, J = February.** |
+| `module_presentation_length` | `int64` | **Presentation duration in days.** The length of the semester from start to finish. Typically ranges from **234 to 269 days** (~8-9 months). |
 
 ---
 
-### 3.2 `assessments.csv` — Detail Penilaian
-**Jumlah baris:** 206 | **Jumlah kolom:** 6
+### 3.2 `assessments.csv` — Assessment Details
+**Row count:** 206 | **Column count:** 6
 
-Berisi informasi tentang setiap penilaian (tugas/ujian) yang tersedia di dalam modul.
+Contains information about the quizzes, assignments, and exams scheduled for each course presentation.
 
-| Kolom | Tipe | Deskripsi Lengkap |
+| Column | Type | Description |
 | :--- | :---: | :--- |
-| `code_module` | `object` | Kode modul tempat penilaian ini berada. Merujuk ke `courses.code_module`. |
-| `code_presentation` | `object` | Semester di mana penilaian ini diberikan. Merujuk ke `courses.code_presentation`. |
-| `id_assessment` | `int64` | **ID unik penilaian.** Setiap tugas atau ujian memiliki ID numerik yang unik secara global di seluruh dataset. |
-| `assessment_type` | `object` | **Jenis penilaian.** Terdapat 3 tipe: **TMA** (Tutor Marked Assessment — tugas yang dinilai tutor), **CMA** (Computer Marked Assessment — tugas yang dinilai otomatis oleh komputer), **Exam** (ujian akhir). |
-| `date` | `float64` | **Tanggal deadline penilaian** (relatif terhadap hari pertama modul). Hari ke-0 = hari modul dimulai. Contoh: `date=56` berarti deadline-nya 56 hari setelah modul dimulai. **Catatan:** Beberapa Exam memiliki NaN karena belum dijadwalkan. |
-| `weight` | `float64` | **Bobot kontribusi penilaian** terhadap nilai akhir modul, dalam persentase (0–100). Total bobot semua penilaian dalam satu modul seharusnya = 100%. |
+| `code_module` | `object` | Course module. References `courses.code_module`. |
+| `code_presentation` | `object` | Presentation semester. References `courses.code_presentation`. |
+| `id_assessment` | `int64` | **Unique assessment ID.** A globally unique key representing a specific assignment or exam. |
+| `assessment_type` | `object` | **Assessment type.** Can be **TMA** (Tutor Marked Assessment), **CMA** (Computer Marked Assessment — graded automatically), or **Exam**. |
+| `date` | `float64` | **Submission deadline date** (relative to the start of the module). Day 0 is the first day of the presentation. Example: `date=56` means the deadline is 56 days after the module starts. **Note:** Final Exams often have `NaN` values if they are unscheduled in the logs. |
+| `weight` | `float64` | **Assessment weight** towards the final course grade (0%–100%). The sum of all assessment weights in a module presentation totals 100%. |
 
 ---
 
-### 3.3 `studentInfo.csv` — Demografi & Hasil Akhir Mahasiswa
-**Jumlah baris:** 32.593 | **Jumlah kolom:** 12
+### 3.3 `studentInfo.csv` — Student Demographics & Final Outcomes
+**Row count:** 32,593 | **Column count:** 12
 
-Dataset inti yang berisi profil demografis setiap mahasiswa beserta hasil akhir mereka. **Satu baris = satu pendaftaran mahasiswa di satu modul-presentasi.**
+The core student database containing demographic profiles and final academic results. **Each row represents one student enrollment in a specific module presentation.**
 
-| Kolom | Tipe | Deskripsi Lengkap |
+| Column | Type | Description |
 | :--- | :---: | :--- |
-| `code_module` | `object` | Kode modul yang diambil mahasiswa. |
-| `code_presentation` | `object` | Semester ketika mahasiswa mengambil modul tersebut. |
-| `id_student` | `int64` | **ID unik mahasiswa.** Satu mahasiswa bisa muncul di beberapa baris jika mengambil beberapa modul atau mengulang modul. |
-| `gender` | `object` | **Jenis kelamin.** Nilai: **M** (Male/Laki-laki) atau **F** (Female/Perempuan). |
-| `region` | `object` | **Wilayah geografis tempat tinggal** mahasiswa di Inggris Raya. Contoh: `London Region`, `South East Region`, `Scotland`, `Ireland`, `East Anglian Region`, dll. Terdapat ~13 wilayah unik. |
-| `highest_education` | `object` | **Tingkat pendidikan tertinggi** yang dimiliki mahasiswa saat mendaftar. Hierarki dari rendah ke tinggi: **No Formal quals** (tanpa kualifikasi formal) → **Lower Than A Level** (di bawah SMA) → **A Level or Equivalent** (setara SMA/diploma) → **HE Qualification** (kualifikasi pendidikan tinggi) → **Post Graduate Qualification** (pascasarjana). |
-| `imd_band` | `object` | **Index of Multiple Deprivation (IMD) Band.** Indikator sosial-ekonomi wilayah tempat tinggal mahasiswa di Inggris. Skala: **0-10%** (paling miskin/deprived) hingga **90-100%** (paling sejahtera). Kolom ini memiliki **missing values** — mahasiswa yang data IMD-nya tidak tersedia. **Kolom ini sangat penting untuk analisis bias sosial-ekonomi.** |
-| `age_band` | `object` | **Kelompok umur mahasiswa.** Nilai: **0-35** (muda), **35-55** (dewasa), **55<=** (senior). |
-| `num_of_prev_attempts` | `int64` | **Jumlah percobaan sebelumnya** untuk modul yang sama. Nilai 0 = pertama kali mengambil modul. Nilai ≥1 = mahasiswa mengulang modul (pernah gagal/withdrawn sebelumnya). |
-| `studied_credits` | `int64` | **Total kredit** yang sedang dipelajari mahasiswa pada semester tersebut. Berkisar 30–600 SKS. Semakin tinggi = beban studi lebih berat. |
-| `disability` | `object` | **Status disabilitas.** Nilai: **Y** (Ya, memiliki disabilitas yang dideklarasikan) atau **N** (Tidak). ~10% mahasiswa memiliki disabilitas. |
-| `final_result` | `object` | **Hasil akhir mahasiswa** di modul tersebut. Terdapat 4 nilai: **Distinction** (lulus dengan pujian, nilai tertinggi), **Pass** (lulus), **Fail** (gagal), **Withdrawn** (berhenti/dropout sebelum modul selesai). **Ini adalah target variabel utama analisis.** |
+| `code_module` | `object` | Course module code. |
+| `code_presentation` | `object` | Semester code. |
+| `id_student` | `int64` | **Unique student ID.** A student can appear in multiple rows if they enrolled in multiple courses or retook a course. |
+| `gender` | `object` | **Gender.** Values: **M** (Male) or **F** (Female). |
+| `region` | `object` | **Geographical region of residence** in the UK (e.g., `London Region`, `South East Region`, `Scotland`, `Ireland`, etc. 13 unique regions). |
+| `highest_education` | `object` | **Highest education level** attained prior to entry. Order: **No Formal quals** → **Lower Than A Level** → **A Level or Equivalent** (High School) → **HE Qualification** (Higher Education) → **Post Graduate Qualification**. |
+| `imd_band` | `object` | **Index of Multiple Deprivation (IMD) Band.** Socioeconomic rank of the student's residence area in the UK. Scale: **0-10%** (most deprived) to **90-100%** (most affluent). Contains **missing values** for missing student addresses. **Crucial for bias auditing.** |
+| `age_band` | `object` | **Age bracket.** Values: **0-35**, **35-55**, **55<=**. |
+| `num_of_prev_attempts` | `int64` | **Number of previous attempts** at this course module. `0` means first attempt, `1` or more indicates they are repeating after a previous failure or withdrawal. |
+| `studied_credits` | `int64` | **Total credits** the student is studying concurrently in this presentation (ranges from 30 to 600 SKS). Higher credits imply heavier course loads. |
+| `disability` | `object` | **Disability status.** Values: **Y** (Yes, declared disability) or **N** (No). ~10% of students have declared a disability. |
+| `final_result` | `object` | **Final course outcome.** Values: **Distinction** (top honors), **Pass**, **Fail**, or **Withdrawn** (dropped out early). **This is the primary target variable for machine learning models.** |
 
 ---
 
-### 3.4 `studentAssessment.csv` — Skor Penilaian Mahasiswa
-**Jumlah baris:** 173.912 | **Jumlah kolom:** 5
+### 3.4 `studentAssessment.csv` — Student Grades
+**Row count:** 173,912 | **Column count:** 5
 
-Berisi skor setiap mahasiswa untuk setiap penilaian yang mereka kumpulkan.
+Contains individual scores achieved by students in their submitted assignments.
 
-| Kolom | Tipe | Deskripsi Lengkap |
+| Column | Type | Description |
 | :--- | :---: | :--- |
-| `id_assessment` | `int64` | ID penilaian yang dikerjakan. Merujuk ke `assessments.id_assessment`. |
-| `id_student` | `int64` | ID mahasiswa yang mengerjakan. Merujuk ke `studentInfo.id_student`. |
-| `date_submitted` | `float64` | **Tanggal pengumpulan** (relatif terhadap hari pertama modul). Contoh: `date_submitted=30` berarti tugas dikumpulkan 30 hari setelah modul dimulai. **Jika dibandingkan dengan `assessments.date`, kita bisa mengetahui apakah mahasiswa mengumpulkan tepat waktu atau terlambat.** |
-| `is_banked` | `int64` | **Apakah skor ini ditransfer dari semester sebelumnya.** Nilai: **1** = Ya (skor dari percobaan sebelumnya yang diakui), **0** = Tidak (skor dari pengerjaan semester ini). |
-| `score` | `float64` | **Skor yang diperoleh** pada penilaian tersebut. Skala 0–100. Beberapa nilai melebihi 100 (bonus credit). **Missing values** menunjukkan penilaian yang tidak memiliki skor numerik (misal Exam yang belum dinilai). |
+| `id_assessment` | `int64` | Assessment ID. References `assessments.id_assessment`. |
+| `id_student` | `int64` | Student ID. References `studentInfo.id_student`. |
+| `date_submitted` | `float64` | **Submission day** (relative to the start of the module). For example, `date_submitted=30` means the assignment was uploaded on day 30. **Comparing this to the deadline in `assessments.date` tells us if the submission was on-time or late.** |
+| `is_banked` | `int64` | **Banked status.** `1` means the grade was carried over from a previous semester attempt, `0` means it was graded in the current semester. |
+| `score` | `float64` | **Grade score achieved** (scale 0-100). Some grades may exceed 100 due to bonus credits. **Missing values** denote assessments that were submitted but not numerically graded. |
 
 ---
 
-### 3.5 `studentRegistration.csv` — Data Registrasi Mahasiswa
-**Jumlah baris:** 32.593 | **Jumlah kolom:** 5
+### 3.5 `studentRegistration.csv` — Course Registration Log
+**Row count:** 32,593 | **Column count:** 5
 
-Mencatat kapan mahasiswa mendaftar dan (jika ada) kapan mereka membatalkan registrasi.
+Mancatat enrollment timelines for each student.
 
-| Kolom | Tipe | Deskripsi Lengkap |
+| Column | Type | Description |
 | :--- | :---: | :--- |
-| `code_module` | `object` | Kode modul yang didaftari. |
-| `code_presentation` | `object` | Semester pendaftaran. |
-| `id_student` | `int64` | ID mahasiswa yang mendaftar. |
-| `date_registration` | `float64` | **Tanggal registrasi** (relatif terhadap hari pertama modul). **Nilai negatif** = mahasiswa mendaftar sebelum modul dimulai (misalnya -20 berarti 20 hari sebelum modul dimulai). Mayoritas mahasiswa mendaftar sebelum modul dimulai. |
-| `date_unregistration` | `float64` | **Tanggal pembatalan registrasi** (relatif terhadap hari pertama modul). Jika **NaN/kosong** = mahasiswa **tidak membatalkan registrasi** dan menyelesaikan modul (baik lulus maupun gagal). Jika ada nilainya = mahasiswa melakukan **withdrawal** (berhenti) pada hari tersebut. |
+| `code_module` | `object` | Course module code. |
+| `code_presentation` | `object` | Presentation semester. |
+| `id_student` | `int64` | Student ID. |
+| `date_registration` | `float64` | **Registration date** (relative to module start). **Negative values** indicate early registration (e.g., `-20` means registration occurred 20 days prior to the start of classes). |
+| `date_unregistration` | `float64` | **Unregistration date** (relative to module start). **NaN/Empty** values indicate the student **did not unregister** and completed the course (whether passing or failing). A numerical value indicates the day the student **withdrew (withdrawn/dropped out)**. |
 
 ---
 
-### 3.6 `studentVle.csv` — Interaksi Mahasiswa dengan VLE
-**Jumlah baris:** ~10.655.280 | **Jumlah kolom:** 6 | **Ukuran file:** ~453 MB
+### 3.6 `studentVle.csv` — Student-VLE Click Activity Logs
+**Row count:** ~10,655,280 | **Column count:** 6 | **File size:** ~453 MB
 
-Dataset terbesar. Setiap baris mencatat total klik seorang mahasiswa pada satu situs/aktivitas VLE pada satu hari tertentu.
+The largest table in the dataset. Each row tracks the daily click aggregation for a specific student accessing a VLE site.
 
-| Kolom | Tipe | Deskripsi Lengkap |
+| Column | Type | Description |
 | :--- | :---: | :--- |
-| `code_module` | `object` | Kode modul. |
-| `code_presentation` | `object` | Semester. |
-| `id_student` | `int64` | ID mahasiswa yang melakukan interaksi. |
-| `id_site` | `int64` | **ID situs/aktivitas VLE** yang diakses. Merujuk ke `vle.id_site`. Setiap situs mewakili satu halaman atau aktivitas spesifik di dalam Virtual Learning Environment. |
-| `date` | `int64` | **Tanggal interaksi** (relatif terhadap hari pertama modul). Hari ke-0 = modul dimulai. **Nilai negatif** = mahasiswa mengakses VLE sebelum modul resmi dimulai. |
-| `sum_click` | `int64` | **Total klik** yang dilakukan mahasiswa pada situs tersebut pada hari tersebut. Bisa bernilai 1 (sekadar membuka halaman) hingga ratusan (interaksi intensif seperti mengerjakan kuis berulang kali). |
+| `code_module` | `object` | Course module code. |
+| `code_presentation` | `object` | Presentation semester. |
+| `id_student` | `int64` | Student ID. |
+| `id_site` | `int64` | **VLE site/activity ID.** References `vle.id_site`. |
+| `date` | `int64` | **Interaction day** (relative to module start). Negative values show pre-semester activity. |
+| `sum_click` | `int64` | **Number of clicks** on the VLE page by the student on this specific day. Ranges from 1 to hundreds. |
 
 ---
 
-### 3.7 `vle.csv` — Metadata Aktivitas VLE
-**Jumlah baris:** 6.364 | **Jumlah kolom:** 6
+### 3.7 `vle.csv` — VLE Activity Metadata
+**Row count:** 6,364 | **Column count:** 6
 
-Berisi deskripsi setiap situs/aktivitas yang tersedia di Virtual Learning Environment.
+Describes the types of resources and tasks configured in the Virtual Learning Environment.
 
-| Kolom | Tipe | Deskripsi Lengkap |
+| Column | Type | Description |
 | :--- | :---: | :--- |
-| `id_site` | `int64` | **ID unik situs/aktivitas VLE.** Setiap aktivitas pembelajaran (halaman konten, forum, kuis, dll.) memiliki ID unik. |
-| `code_module` | `object` | Modul tempat aktivitas ini berada. |
-| `code_presentation` | `object` | Semester di mana aktivitas ini tersedia. |
-| `activity_type` | `object` | **Tipe aktivitas VLE.** Terdapat ~20 tipe berbeda. Yang paling umum: **oucontent** (konten pembelajaran utama), **forumng** (forum diskusi), **subpage** (sub-halaman navigasi), **url** (tautan eksternal), **quiz** (kuis), **resource** (sumber daya unduhan), **page** (halaman info), **oucollaborate** (kolaborasi), **glossary** (glosarium), **homepage** (halaman beranda modul), dan lainnya. |
-| `week_from` | `float64` | **Minggu mulai** aktivitas tersedia (relatif terhadap awal modul). Contoh: `week_from=3` berarti aktivitas mulai tersedia di minggu ke-3. **Memiliki missing values** jika periode tidak ditentukan. |
-| `week_to` | `float64` | **Minggu berakhir** aktivitas tersedia. Contoh: `week_to=10` berarti aktivitas tersedia sampai minggu ke-10. **Memiliki missing values.** |
+| `id_site` | `int64` | **Unique VLE site ID.** |
+| `code_module` | `object` | Module code. |
+| `code_presentation` | `object` | Presentation code. |
+| `activity_type` | `object` | **Activity category.** Includes ~20 types, most commonly: **oucontent** (core reading material), **forumng** (discussion board), **subpage** (navigation menu), **url** (hyperlink), **quiz**, **resource** (downloadable documents), **page**, **oucollaborate** (live meetings), **glossary**, **homepage** (module landing page). |
+| `week_from` | `float64` | **Starting week** the activity is recommended for. Contains missing values if unspecified. |
+| `week_to` | `float64` | **Ending week** the activity is recommended for. |
 
 ---
 
-## 4. Alur Analisis EDA (8 Bagian)
+## 4. EDA Analysis Workflow (8 Sections)
 
-### Section 1: Setup & Pemuatan Data
-**Tujuan:** Memuat semua 7 dataset ke memori Google Colab.
-- File `studentVle.csv` berukuran 453 MB sehingga dimuat secara **chunked** (per 500.000 baris) agar tidak memenuhi RAM Colab.
-- Setiap dataset diinspeksi: jumlah baris × kolom, tipe data, memori yang digunakan, dan 5 baris pertama.
+### Section 1: Setup & Data Loading
+**Goal:** Import all 7 datasets into Google Colab memory.
+- The `studentVle.csv` file (~453 MB) is loaded using **chunked reading** (chunks of 500,000 rows) to prevent Colab from exceeding RAM limits.
+- Shape, data types, memory usage, and first rows are validated for each table.
 
-### Section 2: Analisis Kualitas Data
-**Tujuan:** Memastikan data layak digunakan sebelum pemodelan.
+### Section 2: Data Quality Analysis
+**Goal:** Inspect cleanliness and prepare the data.
+- **Missing Values:** Plotted via heatmaps. `imd_band` contains missing values (students with unregistered addresses), which need to be addressed. `date_unregistration` has empty fields representing students who **remained enrolled** until semester end (which is structurally normal).
+- **Duplicate Rows:** Checked and removed if found.
+- **Data Type Validation:** Verified date columns are numeric.
+- **Outlier Detection:** Computed via the **IQR (Interquartile Range)** method on numerical columns:
+  - `num_of_prev_attempts`: Outliers exist for students who retook a course up to 6 times.
+  - `studied_credits`: Extreme values identify students taking up to 600 concurrent credits.
 
-Analisis yang dilakukan:
-1. **Missing Values** — Heatmap + tabel persentase per dataset.
-   - `imd_band` di studentInfo: data sosial-ekonomi sebagian mahasiswa tidak tersedia.
-   - `date` di assessments: beberapa ujian akhir belum dijadwalkan.
-   - `date_unregistration` di studentRegistration: NaN berarti mahasiswa **tetap terdaftar** (ini normal).
-2. **Duplikat** — Mengecek apakah ada baris identik yang terulang.
-3. **Validasi Tipe Data** — Memastikan setiap kolom memiliki tipe data yang sesuai.
-4. **Deteksi Outlier** — Menggunakan metode **IQR (Interquartile Range)** pada kolom numerik:
-   - `num_of_prev_attempts`: ada mahasiswa yang sudah mencoba hingga 6 kali.
-   - `score`: beberapa skor melebihi 100 (bonus credit).
-   - `studied_credits`: variasi dari 30 hingga 600+ SKS.
+### Section 3: Univariate Analysis
+**Goal:** Examine the distribution of individual variables.
+- **Gender:** Fairly balanced, with a slightly higher proportion of male students.
+- **Age:** The vast majority of students are in the 0-35 age bracket.
+- **Final Result:** A high dropout/withdrawal rate is apparent (~30% Withdrawn, ~13% Fail), meaning almost half of enrolled students do not complete courses successfully.
+- **VLE Activity Types:** `oucontent` (core texts) and `forumng` (discussions) represent the bulk of digital interactions.
 
-### Section 3: Analisis Univariat
-**Tujuan:** Memahami distribusi setiap variabel secara individual.
+### Section 4: Bivariate & Cross-Dataset Analysis
+**Goal:** Correlate characteristics across tables.
+- **IMD Band vs Final Result:** Students residing in low-IMD (deprived) neighborhoods suffer from significantly **higher fail and withdrawal rates**.
+- **Assessment Scores vs Final Result:** Distinction students maintain average scores above **80**, while withdrawn students average **below 50** on their submitted work.
+- **VLE Clicks vs Final Result:** **Key Finding** — students who pass or achieve distinctions exhibit **vastly higher VLE click rates** than failing or withdrawing students. Digital engagement is highly predictive of academic success.
 
-Temuan utama:
-- **Gender**: Distribusi relatif seimbang, sedikit lebih banyak perempuan.
-- **Umur**: Mayoritas mahasiswa berusia 0-35 tahun.
-- **Hasil Akhir**: Proporsi **Withdrawn** (~30%) dan **Fail** (~13%) sangat signifikan — hampir separuh mahasiswa tidak berhasil.
-- **Disabilitas**: ~10% mahasiswa menyatakan memiliki disabilitas.
-- **Assessment**: TMA (tugas manual) paling banyak, disusul CMA dan Exam.
-- **VLE**: `oucontent` dan `forumng` adalah tipe aktivitas paling banyak.
+### Section 5: Student Journey Analysis
+**Goal:** Track time-series events from enrollment to semester end.
+- Most students register **prior to module start** (negative days).
+- Withdrawals happen throughout the semester, but peak during the first 1-4 weeks. Early warning alerts are necessary during this window.
+- **Temporal Click Patterns:** Distinction students maintain consistent engagement. Dropping students show a **steep drop-off** in clicks weeks before officially withdrawing, which serves as a predictive warning sign.
 
-### Section 4: Analisis Bivariat & Lintas Dataset
-**Tujuan:** Menemukan hubungan antar variabel dari dataset berbeda.
+### Section 6: VLE Activity Deep Dive
+**Goal:** Analyze specific digital curriculum profiles.
+- Different course modules have **distinct digital footprints** (some are exam-heavy, others depend heavily on discussion forums).
+- **Heavy VLE Users (top quartile)** have a higher passing rate than light users.
+- Composite indicators per student (active days, unique sites visited, clicks per active day) are strongly correlated with final scores.
 
-Temuan utama:
-- **IMD Band vs Hasil Akhir**: Mahasiswa dari daerah miskin (IMD rendah) memiliki tingkat kegagalan yang **lebih tinggi secara signifikan**.
-- **Skor vs Hasil Akhir**: Mahasiswa Distinction memiliki rata-rata skor **80+**, sementara Withdrawn rata-rata **di bawah 50**.
-- **VLE Klik vs Hasil Akhir**: **Temuan kunci** — mahasiswa sukses memiliki total klik VLE **jauh lebih banyak**. Ini mengonfirmasi bahwa engagement digital adalah prediktor utama keberhasilan.
+### Section 7: Bias & Equity Analysis
+**Goal:** Detect algorithmic discrimination and structural inequalities.
+- **Disparate Impact Ratio (DIR):** Calculated using the *Four-Fifths Rule* across demographics (gender, disability, age, and **IMD socioeconomic bands**).
+- **Chi-Square Test & Cramer's V:** Measured statistical dependency of final results on student demographics.
+- **Ethical Finding:** Low IMD bands (deprived students) have a DIR **below 0.8**, indicating structural inequities. This motivates the design of **Ethical Guardrails** in our tutoring system to avoid perpetuating biases.
 
-### Section 5: Analisis Perjalanan Mahasiswa
-**Tujuan:** Menganalisis timeline temporal mahasiswa dari registrasi hingga hasil akhir.
-
-Temuan utama:
-- Mayoritas mahasiswa mendaftar **sebelum modul dimulai** (tanggal negatif).
-- Withdrawal terjadi **sepanjang modul**, namun ada konsentrasi di awal (minggu 1-4). Ini berarti early warning system bisa efektif.
-- **VLE Engagement Temporal**: Mahasiswa Distinction menunjukkan klik yang konsisten tinggi. Mahasiswa Withdrawn menunjukkan **penurunan tajam** sebelum dropout — sinyal deteksi dini.
-- **Ketepatan Waktu**: Mahasiswa berhasil cenderung mengumpulkan tugas lebih awal. Mahasiswa gagal/withdrawn lebih sering terlambat.
-
-### Section 6: Deep Dive Aktivitas VLE
-**Tujuan:** Memahami pola penggunaan platform pembelajaran secara mendalam.
-
-Temuan utama:
-- Setiap modul memiliki **profil aktivitas VLE yang berbeda** — ada yang lebih banyak menggunakan kuis, ada yang forum-heavy.
-- **Heavy users (kuartil atas)** memiliki tingkat kelulusan (Pass + Distinction) yang jauh lebih tinggi dibandingkan Light users.
-- Metrik agregat per mahasiswa: **hari aktif, situs unik dikunjungi, klik per hari, rentang engagement** — semua berkorelasi kuat dengan keberhasilan.
-
-### Section 7: Analisis Bias & Kesetaraan
-**Tujuan:** Mendeteksi dan mengukur potensi diskriminasi dalam data.
-
-Analisis yang dilakukan:
-1. **Disparate Impact Ratio (DIR)** — Menggunakan *Four-Fifths Rule*:
-   - Jika DIR ≥ 0.8: Tidak ada indikasi diskriminasi.
-   - Jika DIR < 0.8: Ada indikasi *disparate impact*.
-   - Dihitung untuk dimensi: gender, umur, disabilitas, pendidikan, dan **IMD Band**.
-2. **Uji Chi-Square** — Menguji signifikansi statistik hubungan antara variabel demografi dan hasil akhir:
-   - **Cramer's V** untuk mengukur kekuatan asosiasi (kecil < 0.1, sedang 0.1-0.3, besar > 0.3).
-   - `highest_education` kemungkinan memiliki effect size terbesar.
-
-> [!IMPORTANT]
-> **Temuan etis utama:** IMD Band rendah (mahasiswa dari daerah miskin) memiliki DIR yang di bawah 0.8 — artinya data mentah mengandung **ketimpangan struktural**. Inilah yang memotivasi pembangunan **Ethical Guardrails** pada chatbot AI.
-
-### Section 8: Rekayasa Fitur & Ekspor Data
-**Tujuan:** Membuat fitur-fitur numerik agregat yang siap di-feed ke model Machine Learning.
-
-Fitur yang dibuat (total ~30 kolom):
-- **Fitur VLE**: total_clicks, unique_sites, active_days, avg_clicks_per_day, engagement_span, max_daily_clicks.
-- **Fitur Assessment**: avg_score, std_score, min/max_score, completion_rate, on_time_rate, weighted_score.
-- **Fitur Registrasi**: date_registration, is_unregistered, days_enrolled, early_registration.
-
-Output disimpan ke Google Drive:
-- `student_master.csv` — satu baris per mahasiswa dengan semua fitur agregat.
-- `vle_aggregated.csv` — statistik VLE per mahasiswa per modul.
+### Section 8: Feature Engineering & Data Export
+**Goal:** Construct student-level aggregated tables for Machine Learning model training (e.g., Random Forest Classifier).
+- **VLE Aggregates:** `total_clicks`, `unique_sites`, `active_days`, `avg_clicks_per_day`, `engagement_span`.
+- **Assessment Aggregates:** `avg_score`, `std_score`, `completion_rate`, `on_time_rate`, `weighted_score`.
+- **Registration Aggregates:** `days_enrolled`, `early_registration`.
+- **Exports:** Saved as `student_master.csv` (1 row per student with all engineered features) and `vle_aggregated.csv`.
 
 ---
 
-## 5. Relevansi EDA dengan Komponen AI Learning Path Chatbot
+## 5. Relevance of EDA to the AI Learning Path Chatbot Components
 
 ```mermaid
 graph TD
     EDA["EDA OULAD<br/>(Notebook 01)"] --> KG["Knowledge Graph<br/>(Notebook 02)"]
     EDA --> KT["Knowledge Tracing<br/>(Notebook 03)"]
     EDA --> BIAS["Ethical Guardrails<br/>(Notebook 04)"]
-
+ 
     KG -->|"Topological Sort<br/>DAG prereqs"| PATH["Path Generator"]
     KT -->|"P(mastery) per<br/>Knowledge Component"| PATH
     PATH --> CHATBOT["RAG Chatbot<br/>(Gemini API)"]
     BIAS -->|"Smart AI Guard<br/>Challenge Injection<br/>Human Override"| CHATBOT
-
+ 
     style EDA fill:#2ecc71,color:#fff
     style KG fill:#3498db,color:#fff
     style KT fill:#3498db,color:#fff
@@ -291,10 +260,10 @@ graph TD
     style CHATBOT fill:#f39c12,color:#fff
 ```
 
-| Temuan EDA | Komponen AI yang Dipengaruhi |
+| EDA Finding | Affected AI Component / Algorithm |
 | :--- | :--- |
-| 20 tipe aktivitas VLE + urutan temporal | Knowledge Graph (nodes = tipe aktivitas, edges = urutan waktu) |
-| P(mastery) berbasis skor kuis | pyBKT parameters: P(init), P(learn), P(guess), P(slip) |
-| DIR < 0.8 pada IMD Band rendah | Socioeconomic-Blind BKT + Challenge Injection |
-| Heavy users sukses, light users gagal | FSRS Spaced Repetition scheduling |
-| Withdrawal terdeteksi di awal modul | Early Warning → Adaptive Intervention |
+| 20 VLE activity types + temporal sequences | Knowledge Graph (nodes = activity types, edges = temporal order) |
+| Quiz score-based BKT parameters | pyBKT parameter training: P(init), P(learn), P(guess), P(slip) |
+| DIR < 0.8 in low IMD Bands | Socioeconomic-Blind BKT + Challenge Injection in RAG |
+| Heavy users succeed, light users fail | FSRS Spaced Repetition flashcard intervals |
+| Withdrawal spikes during early weeks | **Early Warning System (Random Forest)** -> Adaptive Intervention |
